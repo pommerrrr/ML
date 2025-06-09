@@ -2,15 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Button } from './components/ui/button';
 import { Alert, AlertDescription } from './components/ui/alert';
-import { Loader2, BarChart3, Search, Calculator, RefreshCw } from 'lucide-react';
+import { Loader2, BarChart3, Search, Calculator, RefreshCw, AlertTriangle } from 'lucide-react';
 import { ProductSearch } from './components/ProductSearch';
 import { ProductList } from './components/ProductList';
 import { AnalysisList } from './components/AnalysisList';
 import { Dashboard } from './components/Dashboard';
+import { FirebaseConfig } from './components/FirebaseConfig';
 import { useProducts } from './hooks/useProducts';
 
 function App() {
   const [activeTab, setActiveTab] = useState('search');
+  const [firebaseConfigured, setFirebaseConfigured] = useState(false);
+  const [configError, setConfigError] = useState<string | null>(null);
+  
   const {
     products,
     analyses,
@@ -26,7 +30,33 @@ function App() {
   } = useProducts();
 
   useEffect(() => {
-    loadSavedAnalyses();
+    // Verifica se o Firebase está configurado
+    const checkFirebaseConfig = () => {
+      const requiredEnvVars = [
+        'VITE_FIREBASE_API_KEY',
+        'VITE_FIREBASE_AUTH_DOMAIN',
+        'VITE_FIREBASE_PROJECT_ID',
+        'VITE_FIREBASE_STORAGE_BUCKET',
+        'VITE_FIREBASE_MESSAGING_SENDER_ID',
+        'VITE_FIREBASE_APP_ID'
+      ];
+
+      const missingVars = requiredEnvVars.filter(varName => 
+        !import.meta.env[varName] || 
+        import.meta.env[varName] === 'your_api_key_here' ||
+        import.meta.env[varName] === ''
+      );
+
+      if (missingVars.length > 0) {
+        setConfigError(`Variáveis Firebase não configuradas: ${missingVars.join(', ')}`);
+        setFirebaseConfigured(false);
+      } else {
+        setFirebaseConfigured(true);
+        loadSavedAnalyses();
+      }
+    };
+
+    checkFirebaseConfig();
   }, [loadSavedAnalyses]);
 
   const handleSearch = async (query: string) => {
@@ -48,6 +78,46 @@ function App() {
     await analyzeAllProducts();
     setActiveTab('analyses');
   };
+
+  // Se Firebase não estiver configurado, mostra tela de configuração
+  if (!firebaseConfigured) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-600 rounded-lg">
+                  <BarChart3 className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">
+                    Mercado Livre Analyzer
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    Configuração Necessária
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Configuration Alert */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Alert className="mb-6 border-yellow-200 bg-yellow-50">
+            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              <strong>Firebase não configurado:</strong> {configError}
+            </AlertDescription>
+          </Alert>
+
+          <FirebaseConfig />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">

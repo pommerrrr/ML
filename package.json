@@ -3,15 +3,15 @@
   "private": true,
   "version": "1.0.0",
   "description": "Sistema de análise de produtos do Mercado Livre com cálculo de margens de lucro",
-  "author": "Scrapybara Team",
-  "homepage": "https://github.com/seu-usuario/mercado-livre-analyzer",
+  "author": "Pommerrrr",
+  "homepage": "https://pommerrrr.github.io/ML/",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "bun run build && gh-pages -d dist",
+    "deploy": "npm run build && gh-pages -d dist",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

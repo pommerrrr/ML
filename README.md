@@ -2,86 +2,51 @@
 
 Sistema web completo para análise de produtos do Mercado Livre, cálculo de margens de lucro e sugestão de preços de custo ideais.
 
-## 🚀 Funcionalidades
+## 🎯 **Funcionalidades**
 
-- **🔍 Busca Inteligente**: Busque produtos por termo ou encontre os mais vendidos por categoria
+- **🔍 Busca Inteligente**: Busque produtos por termo ou encontre os mais vendidos
 - **📈 Análise de Margens**: Cálculo automático de custos (taxas ML, frete, anúncios)
 - **💰 Sugestão de Custo**: Preço máximo que você deve pagar para ter >30% de lucro
-- **📊 Dashboard Completo**: Gráficos e métricas dos produtos analisados
+- **📊 Dashboard**: Gráficos e métricas dos produtos analisados
 - **💾 Histórico**: Salva todas as análises no Firebase
-- **📱 Interface Responsiva**: Design moderno e intuitivo
 
-## 🛠️ Tecnologias
+## 🚀 **Acesso Rápido**
 
-- **Frontend**: React 19 + TypeScript + Tailwind V4
-- **UI**: ShadCN/UI + Lucide Icons
-- **Charts**: Recharts
-- **Backend**: Firebase Firestore
-- **API**: Mercado Livre API
-- **Build**: Vite
-- **Package Manager**: Bun
+🌐 **Site Online:** https://pommerrrr.github.io/ML/
 
-## 📋 Pré-requisitos
+## ⚙️ **Configuração Inicial**
 
-1. **Node.js** (versão 18 ou superior)
-2. **Bun** instalado globalmente
-3. **Conta Firebase** com projeto criado
-4. **Git** para versionamento
+### 1. **Configure o Firebase:**
 
-## ⚙️ Configuração
-
-### 1. Clone o repositório
-
-```bash
-git clone <your-repo-url>
-cd mercado-livre-analyzer
-```
-
-### 2. Instale as dependências
-
-```bash
-bun install
-```
-
-### 3. Configure o Firebase
-
-1. Acesse o [Console do Firebase](https://console.firebase.google.com/)
+1. Acesse [console.firebase.google.com](https://console.firebase.google.com)
 2. Crie um novo projeto
-3. Ative o Firestore Database
-4. Vá em "Configurações do projeto" > "Geral"
-5. Role até "Seus aplicativos" e clique em "Web"
-6. Registre o app e copie as configurações
+3. Ative o **Firestore Database** (modo teste)
+4. Adicione um app Web e copie as configurações
 
-### 4. Configure as variáveis de ambiente
+### 2. **Configure as Secrets no GitHub:**
 
-```bash
-# Copie o arquivo de exemplo
-cp .env.example .env
+No seu repositório `https://github.com/pommerrrr/ML`:
 
-# Edite o arquivo .env com suas configurações do Firebase
-nano .env
+1. Vá em **Settings** → **Secrets and variables** → **Actions**
+2. Adicione essas 6 secrets com os valores do Firebase:
+
+```
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
 ```
 
-Substitua os valores no arquivo `.env`:
+### 3. **Configure as Regras do Firestore:**
 
-```env
-VITE_FIREBASE_API_KEY=sua_api_key
-VITE_FIREBASE_AUTH_DOMAIN=seu_projeto.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=seu_projeto_id
-VITE_FIREBASE_STORAGE_BUCKET=seu_projeto.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=seu_sender_id
-VITE_FIREBASE_APP_ID=seu_app_id
-```
-
-### 5. Configure as regras do Firestore
-
-No console do Firebase, vá em "Firestore Database" > "Regras" e configure:
+No Firebase Console → Firestore Database → Regras:
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permite leitura e escrita nas análises de produtos
     match /product-analyses/{document} {
       allow read, write: if true;
     }
@@ -89,165 +54,120 @@ service cloud.firestore {
 }
 ```
 
-## 🚀 Executando o projeto
+### 4. **Ative o GitHub Pages:**
 
-### Desenvolvimento
+1. Settings → Pages
+2. Source: **GitHub Actions**
 
-```bash
-bun dev
-```
+## 🔄 **Como Usar**
 
-O projeto estará disponível em `http://localhost:5173`
+### **1. Buscar Produtos**
+- Digite um termo de busca OU
+- Clique em "Buscar Mais Vendidos" (com filtro de categoria opcional)
 
-### Build para produção
-
-```bash
-bun run build
-```
-
-### Preview da build
-
-```bash
-bun run preview
-```
-
-## 🌐 Deploy
-
-### GitHub Pages
-
-1. Configure o repositório no GitHub
-2. Vá em "Settings" > "Pages"
-3. Configure a source como "GitHub Actions"
-4. Crie o arquivo `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@v1
-      with:
-        bun-version: latest
-    
-    - name: Install dependencies
-      run: bun install
-    
-    - name: Build
-      run: bun run build
-      env:
-        VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-        VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-        VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-        VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-        VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-        VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-    
-    - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./dist
-```
-
-2. Adicione suas variáveis de ambiente em "Settings" > "Secrets and variables" > "Actions"
-
-## 📊 Como usar
-
-### 1. Buscar Produtos
-
-- **Por termo**: Digite qualquer produto na barra de busca
-- **Mais vendidos**: Clique em "Buscar Mais Vendidos" (opcionalmente filtre por categoria)
-
-### 2. Analisar Produtos
-
+### **2. Analisar Produtos**
 - **Individual**: Clique em "Analisar" em qualquer produto
-- **Em lote**: Clique em "Analisar Todos" para processar todos os produtos encontrados
+- **Em lote**: Clique em "Analisar Todos"
 
-### 3. Interpretar Resultados
-
-- **Preço de Venda**: Preço atual no Mercado Livre
-- **Custos Totais**: Taxas ML + Frete + Anúncios Premium
+### **3. Interpretar Resultados**
+- **Preço de Venda**: Valor atual no ML
+- **Custos Totais**: Taxas ML (12%) + Frete (R$15) + Anúncios (5%)
 - **Receita Líquida**: Quanto você realmente recebe
-- **Custo Máximo**: Preço máximo que deve pagar pelo produto para ter 30% de lucro
+- **Custo Máximo**: Preço que deve pagar para ter 30% de lucro
 
-### 4. Dashboard
-
+### **4. Dashboard**
 - Visualize estatísticas gerais
 - Gráficos de distribuição de margem
-- Categorias mais analisadas
 - Recomendações baseadas nos dados
 
-## 🔧 Customização
+## 🛠️ **Desenvolvimento Local**
 
-### Modificar taxas e custos
+```bash
+# Clone o repositório
+git clone https://github.com/pommerrrr/ML.git
+cd ML
 
-Edite o arquivo `src/services/mercadoLivre.ts`:
+# Instale dependências
+npm install
+
+# Configure variáveis locais
+cp .env.example .env
+# Edite .env com suas credenciais Firebase
+
+# Execute
+npm run dev
+```
+
+## 📦 **Build e Deploy**
+
+```bash
+# Build para produção
+npm run build
+
+# Preview local
+npm run preview
+```
+
+O deploy automático acontece via GitHub Actions ao fazer push na branch main.
+
+## 🔧 **Personalização**
+
+### **Modificar Taxas de Custos**
+
+Edite `src/services/mercadoLivre.ts`:
 
 ```typescript
-// Configurações padrão
 const mlFeePercentage = 0.12; // 12% taxa ML
 const shippingCost = 15; // R$ 15 frete médio
 const premiumAdCost = sellingPrice * 0.05; // 5% anúncios
 const targetProfitMargin = 0.30; // 30% lucro target
 ```
 
-### Adicionar novas funcionalidades
+## 🌐 **API do Mercado Livre**
 
-1. Crie novos componentes em `src/components/`
-2. Adicione novos hooks em `src/hooks/`
-3. Estenda os tipos em `src/types/`
+### **Endpoints Utilizados (Públicos - sem autenticação):**
+- `/sites/MLB/search` - Buscar produtos
+- `/sites/MLB/categories` - Listar categorias
 
-## 🐛 Solução de Problemas
+### **Fallback Automático:**
+- Se a API falhar (CORS/limite), o sistema usa dados mock para demonstração
+- Todas as funcionalidades continuam operando normalmente
 
-### CORS Error na API do ML
+## 🔍 **Solução de Problemas**
 
-A API do Mercado Livre pode ter restrições CORS. Para resolver:
+### **Página em Branco:**
+1. Verifique se as secrets do Firebase estão configuradas
+2. Abra F12 → Console para ver erros específicos
 
-1. Use um proxy (como `cors-anywhere`)
-2. Configure um backend intermediário
-3. Use extensões de browser para desenvolvimento
+### **Erro 404 nos Assets:**
+- Verifique se `base: '/ML/'` está correto no `vite.config.js`
 
-### Erro de Firebase
+### **API do ML não funciona:**
+- Normal! O sistema tem fallback automático com dados mock
+- Para produção, implemente um backend próprio
 
-1. Verifique se as credenciais estão corretas
-2. Confirme se o Firestore está ativado
-3. Verifique as regras de segurança
+## 📊 **Métricas e KPIs**
 
-### Build falha
+O sistema calcula automaticamente:
+- **Taxa de conversão**: % de produtos com margem >30%
+- **Margem média**: Média de todas as análises
+- **ROI projetado**: Retorno sobre investimento esperado
+- **Distribuição por categoria**: Quais nichos são mais lucrativos
 
-1. Verifique se todas as variáveis de ambiente estão definidas
-2. Execute `bun install` novamente
-3. Limpe o cache: `rm -rf node_modules .turbo dist && bun install`
+## 🤝 **Contribuição**
 
-## 📝 Licença
-
-Este projeto é distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
-
-## 🤝 Contribuição
-
-1. Faça um Fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
+1. Fork o projeto
+2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
+4. Push para a branch (`git push origin feature/nova-funcionalidade`)
 5. Abra um Pull Request
 
-## 📞 Suporte
+## 📞 **Suporte**
 
-Se você tiver dúvidas ou problemas:
-
-1. Abra uma [Issue](../../issues)
-2. Consulte a documentação
-3. Verifique os exemplos de uso
+- **Issues**: [GitHub Issues](https://github.com/pommerrrr/ML/issues)
+- **Documentação**: Este README
+- **Firebase**: [Documentação Firebase](https://firebase.google.com/docs)
 
 ---
 
-Desenvolvido com ❤️ para otimizar vendas no Mercado Livre
+✨ **Desenvolvido para otimizar suas vendas no Mercado Livre!**
