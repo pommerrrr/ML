@@ -1,13 +1,24 @@
 import { NextResponse } from 'next/server';
-import { getCategories } from '@/lib/mercado-livre';
 
 export async function GET() {
   try {
-    const categories = await getCategories();
+    const response = await fetch('https://api.mercadolibre.com/sites/MLB/categories');
+    
+    if (!response.ok) {
+      throw new Error('Erro ao buscar categorias');
+    }
+    
+    const categories = await response.json();
+    
+    // Pegar apenas as principais categorias
+    const mainCategories = categories.slice(0, 10).map((cat: any) => ({
+      id: cat.id,
+      name: cat.name
+    }));
     
     return NextResponse.json({ 
       success: true, 
-      data: categories 
+      data: mainCategories 
     });
   } catch (error) {
     console.error('Erro na API de categorias:', error);
