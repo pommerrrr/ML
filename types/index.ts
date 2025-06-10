@@ -23,6 +23,8 @@ export interface MercadoLivreProduct {
   };
   category_id: string;
   domain_id: string;
+  catalog_product_id?: string;
+  product_name?: string;
 }
 
 export interface ProductAnalysis {

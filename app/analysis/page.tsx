@@ -61,247 +61,185 @@ export default function AnalysisPage() {
 
   const fetchCatalogProducts = async () => {
     setLoading(true);
-    setDebugInfo('Iniciando busca de produtos...');
+    setDebugInfo('Iniciando busca de produtos catalogados...');
     
     try {
-      console.log('Iniciando busca de produtos...');
+      console.log('Iniciando busca de produtos catalogados...');
       
-      // Buscar produtos populares com termos simples e efetivos
-      const popularQueries = [
-        'celular',
-        'notebook', 
-        'fone',
-        'smartwatch',
-        'tablet',
-        'televisao',
-        'geladeira',
-        'tenis',
-        'perfume',
-        'relogio'
+      let allProducts: MercadoLivreProduct[] = [];
+      let totalFetched = 0;
+
+      // Categorias principais para buscar produtos catalogados
+      const popularCategories = [
+        'MLB1055', // Celulares e Telefones
+        'MLB1648', // Informática
+        'MLB1051', // Eletrônicos, Áudio e Vídeo
+        'MLB1276', // Esportes e Fitness
+        'MLB1430', // Roupas e Acessórios
+        'MLB1574', // Casa, Móveis e Decoração
+        'MLB1132', // Beleza e Cuidado Pessoal
+        'MLB1384', // Bebês
+        'MLB1144', // Carros, Motos e Outros
+        'MLB1367'  // Livros, Revistas e Comics
       ];
 
-      let allProducts: MercadoLivreProduct[] = [];
-
-      // Buscar produtos sequencialmente para evitar sobrecarga
-      for (let i = 0; i < Math.min(popularQueries.length, 5); i++) {
-        const query = popularQueries[i];
+      // Buscar produtos catalogados por categoria
+      for (let i = 0; i < Math.min(popularCategories.length, 5); i++) {
+        const categoryId = popularCategories[i];
         try {
-          setDebugInfo(`Buscando produtos para: ${query}...`);
-          console.log(`Buscando produtos para: ${query}`);
+          setDebugInfo(`Buscando produtos catalogados da categoria ${categoryId}...`);
+          console.log(`Buscando produtos catalogados da categoria: ${categoryId}`);
           
-          const response = await fetch(`/api/mercadolivre/search?q=${encodeURIComponent(query)}&limit=30`);
+          const response = await fetch(`/api/mercadolivre/catalog?category_id=${categoryId}&limit=30&offset=0`);
           
           if (response.ok) {
             const data = await response.json();
-            console.log(`Encontrados ${data.results?.length || 0} produtos para ${query}`);
+            console.log(`Encontrados ${data.results?.length || 0} produtos catalogados na categoria ${categoryId}`);
             
             if (data.results && Array.isArray(data.results)) {
               allProducts = [...allProducts, ...data.results];
-              setDebugInfo(`Coletados ${allProducts.length} produtos até agora...`);
+              totalFetched += data.results.length;
+              setDebugInfo(`Coletados ${totalFetched} produtos catalogados até agora...`);
             }
           } else {
-            console.error(`Erro na busca para ${query}:`, response.status);
-            setDebugInfo(`Erro na busca para ${query}, continuando...`);
+            console.error(`Erro na busca catalogada para categoria ${categoryId}:`, response.status);
+            setDebugInfo(`Erro na categoria ${categoryId}, continuando...`);
           }
           
-          // Pequeno delay entre requests para não sobrecarregar
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Delay entre requests
+          await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (error) {
-          console.error(`Erro ao buscar ${query}:`, error);
-          setDebugInfo(`Erro ao buscar ${query}, tentando próximo...`);
+          console.error(`Erro ao buscar categoria ${categoryId}:`, error);
+          setDebugInfo(`Erro na categoria ${categoryId}, tentando próxima...`);
         }
       }
 
-      console.log(`Total de produtos coletados: ${allProducts.length}`);
-      setDebugInfo(`Total coletado: ${allProducts.length} produtos. Processando...`);
-
+      // Se não encontrou produtos por categoria, tenta busca geral por queries populares
       if (allProducts.length === 0) {
-        // Se não encontrou nada, tenta uma busca mais geral
-        setDebugInfo('Tentando busca geral sem filtros...');
-        console.log('Tentando busca geral...');
+        setDebugInfo('Buscando produtos catalogados com termos populares...');
+        
+        const popularTerms = ['celular', 'notebook', 'fone', 'tênis', 'perfume'];
+        
+        for (const term of popularTerms.slice(0, 3)) {
+          try {
+            setDebugInfo(`Buscando produtos catalogados: ${term}...`);
+            
+            const response = await fetch(`/api/mercadolivre/catalog?q=${encodeURIComponent(term)}&limit=30`);
+            
+            if (response.ok) {
+              const data = await response.json();
+              if (data.results && Array.isArray(data.results)) {
+                allProducts = [...allProducts, ...data.results];
+                totalFetched += data.results.length;
+                setDebugInfo(`Coletados ${totalFetched} produtos catalogados...`);
+              }
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } catch (error) {
+            console.error(`Erro ao buscar termo ${term}:`, error);
+          }
+        }
+      }
+
+      // Se ainda não encontrou, tenta busca geral
+      if (allProducts.length === 0) {
+        setDebugInfo('Buscando produtos catalogados sem filtros...');
         try {
-          const response = await fetch('/api/mercadolivre/search?limit=50');
+          const response = await fetch('/api/mercadolivre/catalog?limit=50');
           if (response.ok) {
             const data = await response.json();
             if (data.results && Array.isArray(data.results)) {
               allProducts = data.results;
-              console.log(`Busca geral encontrou ${allProducts.length} produtos`);
-              setDebugInfo(`Busca geral encontrou ${allProducts.length} produtos`);
+              setDebugInfo(`Busca geral encontrou ${allProducts.length} produtos catalogados`);
             }
           }
         } catch (error) {
-          console.error('Erro na busca geral:', error);
-          setDebugInfo('Erro na busca geral, usando produtos de exemplo...');
+          console.error('Erro na busca geral catalogada:', error);
         }
       }
+
+      console.log(`Total de produtos catalogados coletados: ${allProducts.length}`);
+      setDebugInfo(`Total coletado: ${allProducts.length} produtos catalogados. Processando...`);
 
       // Remover duplicatas por ID
       const uniqueProducts = allProducts.filter((product, index, self) => 
         index === self.findIndex(p => p.id === product.id)
       );
 
-      // Filtrar produtos válidos (com preço e título)
+      // Filtrar produtos válidos
       const validProducts = uniqueProducts.filter(p => 
         p && p.id && p.title && p.price && p.price > 0
       );
 
-      console.log(`Produtos válidos após filtros: ${validProducts.length}`);
+      console.log(`Produtos catalogados válidos: ${validProducts.length}`);
       setDebugInfo(`Produtos válidos: ${validProducts.length}`);
 
-      // Ordenar por quantidade vendida (padrão)
+      // Ordenar por quantidade vendida
       validProducts.sort((a, b) => (b.sold_quantity || 0) - (a.sold_quantity || 0));
 
       if (validProducts.length === 0) {
-        console.warn('Nenhum produto válido encontrado, usando produtos de exemplo');
-        setDebugInfo('Carregando produtos de exemplo...');
+        setDebugInfo('Nenhum produto catalogado encontrado, usando busca tradicional...');
         
-        // Produtos de exemplo para demonstração (quando a API não retorna resultados)
-        const exampleProducts: MercadoLivreProduct[] = [
-          {
-            id: 'MLB2073407740',
-            title: 'Smartphone Samsung Galaxy A54 5G 128gb 8gb Ram Câmera 50mp',
-            price: 1299.99,
-            currency_id: 'BRL',
-            available_quantity: 50,
-            sold_quantity: 1500,
-            condition: 'new',
-            listing_type_id: 'gold_special',
-            permalink: 'https://produto.mercadolivre.com.br/MLB-2073407740',
-            thumbnail: 'https://http2.mlstatic.com/D_NQ_NP_2X_697965-MLA69651088-SSO.webp',
-            shipping: { free_shipping: true, mode: 'me2', tags: ['self_service_in'] },
-            seller: { id: 12345, nickname: 'LOJA_OFICIAL', car_dealer: false, real_estate_agency: false, tags: ['good_reputation'] },
-            category_id: 'MLB1055',
-            domain_id: 'MLB-CELLPHONES'
-          },
-          {
-            id: 'MLB3456789012',
-            title: 'Notebook Lenovo IdeaPad 3 15.6" Intel Core i5 8GB 256GB SSD',
-            price: 2499.99,
-            currency_id: 'BRL',
-            available_quantity: 25,
-            sold_quantity: 850,
-            condition: 'new',
-            listing_type_id: 'gold_special',
-            permalink: 'https://produto.mercadolivre.com.br/MLB-3456789012',
-            thumbnail: 'https://http2.mlstatic.com/D_NQ_NP_2X_123456-MLA69651088-SSO.webp',
-            shipping: { free_shipping: true, mode: 'me2', tags: ['self_service_in'] },
-            seller: { id: 67890, nickname: 'LENOVO_OFICIAL', car_dealer: false, real_estate_agency: false, tags: ['good_reputation'] },
-            category_id: 'MLB1648',
-            domain_id: 'MLB-COMPUTERS'
-          },
-          {
-            id: 'MLB4567890123',
-            title: 'Air Fryer Mondial Family Plus AF-31 4,5L Preta 220V',
-            price: 189.99,
-            currency_id: 'BRL',
-            available_quantity: 100,
-            sold_quantity: 2500,
-            condition: 'new',
-            listing_type_id: 'gold_special',
-            permalink: 'https://produto.mercadolivre.com.br/MLB-4567890123',
-            thumbnail: 'https://http2.mlstatic.com/D_NQ_NP_2X_789012-MLA69651088-SSO.webp',
-            shipping: { free_shipping: true, mode: 'me2', tags: ['self_service_in'] },
-            seller: { id: 13579, nickname: 'MONDIAL_OFICIAL', car_dealer: false, real_estate_agency: false, tags: ['good_reputation'] },
-            category_id: 'MLB1574',
-            domain_id: 'MLB-HOME_APPLIANCES'
-          },
-          {
-            id: 'MLB5678901234',
-            title: 'Tênis Nike Air Max SC Masculino Branco Preto Original',
-            price: 329.99,
-            currency_id: 'BRL',
-            available_quantity: 200,
-            sold_quantity: 3200,
-            condition: 'new',
-            listing_type_id: 'gold_special',
-            permalink: 'https://produto.mercadolivre.com.br/MLB-5678901234',
-            thumbnail: 'https://http2.mlstatic.com/D_NQ_NP_2X_345678-MLA69651088-SSO.webp',
-            shipping: { free_shipping: true, mode: 'me2', tags: ['self_service_in'] },
-            seller: { id: 24680, nickname: 'NIKE_OFICIAL', car_dealer: false, real_estate_agency: false, tags: ['good_reputation'] },
-            category_id: 'MLB1276',
-            domain_id: 'MLB-SNEAKERS'
-          },
-          {
-            id: 'MLB6789012345',
-            title: 'Apple Watch Series 9 GPS 45mm Caixa Alumínio Meia-noite',
-            price: 2899.99,
-            currency_id: 'BRL',
-            available_quantity: 15,
-            sold_quantity: 450,
-            condition: 'new',
-            listing_type_id: 'gold_special',
-            permalink: 'https://produto.mercadolivre.com.br/MLB-6789012345',
-            thumbnail: 'https://http2.mlstatic.com/D_NQ_NP_2X_456789-MLA69651088-SSO.webp',
-            shipping: { free_shipping: true, mode: 'me2', tags: ['self_service_in'] },
-            seller: { id: 35791, nickname: 'APPLE_AUTORIZADA', car_dealer: false, real_estate_agency: false, tags: ['good_reputation'] },
-            category_id: 'MLB1271',
-            domain_id: 'MLB-SMARTWATCHES'
-          },
-          {
-            id: 'MLB7890123456',
-            title: 'Fone JBL Tune 770NC Bluetooth com Cancelamento de Ruído',
-            price: 449.99,
-            currency_id: 'BRL',
-            available_quantity: 80,
-            sold_quantity: 1800,
-            condition: 'new',
-            listing_type_id: 'gold_special',
-            permalink: 'https://produto.mercadolivre.com.br/MLB-7890123456',
-            thumbnail: 'https://http2.mlstatic.com/D_NQ_NP_2X_567890-MLA69651088-SSO.webp',
-            shipping: { free_shipping: true, mode: 'me2', tags: ['self_service_in'] },
-            seller: { id: 46802, nickname: 'JBL_OFICIAL', car_dealer: false, real_estate_agency: false, tags: ['good_reputation'] },
-            category_id: 'MLB1271',
-            domain_id: 'MLB-HEADPHONES'
+        // Fallback para busca tradicional se produtos catalogados não funcionarem
+        try {
+          const fallbackTerms = ['celular', 'notebook', 'fone'];
+          let fallbackProducts: MercadoLivreProduct[] = [];
+          
+          for (const term of fallbackTerms) {
+            const response = await fetch(`/api/mercadolivre/search?q=${encodeURIComponent(term)}&limit=20`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.results && Array.isArray(data.results)) {
+                fallbackProducts = [...fallbackProducts, ...data.results];
+              }
+            }
           }
-        ];
-        
-        setProducts(exampleProducts);
-        setDebugInfo(`Carregados ${exampleProducts.length} produtos de exemplo`);
+          
+          if (fallbackProducts.length > 0) {
+            setProducts(fallbackProducts.slice(0, 100));
+            setDebugInfo(`Carregados ${fallbackProducts.length} produtos tradicionais`);
+          } else {
+            throw new Error('Nenhum produto encontrado');
+          }
+        } catch (fallbackError) {
+          console.error('Erro no fallback:', fallbackError);
+          setDebugInfo('Erro ao buscar produtos. Tente recarregar a página.');
+        }
       } else {
         setProducts(validProducts);
-        setDebugInfo(`Sucesso! ${validProducts.length} produtos carregados`);
+        setDebugInfo(`Sucesso! ${validProducts.length} produtos catalogados carregados`);
       }
     } catch (error) {
-      console.error('Erro geral ao buscar produtos:', error);
-      setDebugInfo(`Erro: ${error}. Mostrando produtos de exemplo.`);
-      
-      // Fallback para produtos de exemplo em caso de erro total
-      const exampleProducts: MercadoLivreProduct[] = [
-        {
-          id: 'MLB2073407740',
-          title: 'Smartphone Samsung Galaxy A54 5G 128gb 8gb Ram Câmera 50mp',
-          price: 1299.99,
-          currency_id: 'BRL',
-          available_quantity: 50,
-          sold_quantity: 1500,
-          condition: 'new',
-          listing_type_id: 'gold_special',
-          permalink: 'https://produto.mercadolivre.com.br/MLB-2073407740',
-          thumbnail: 'https://http2.mlstatic.com/D_NQ_NP_2X_697965-MLA69651088-SSO.webp',
-          shipping: { free_shipping: true, mode: 'me2', tags: ['self_service_in'] },
-          seller: { id: 12345, nickname: 'LOJA_OFICIAL', car_dealer: false, real_estate_agency: false, tags: ['good_reputation'] },
-          category_id: 'MLB1055',
-          domain_id: 'MLB-CELLPHONES'
-        }
-      ];
-      setProducts(exampleProducts);
+      console.error('Erro geral ao buscar produtos catalogados:', error);
+      setDebugInfo(`Erro: ${error}. Tente recarregar a página.`);
     } finally {
       setLoading(false);
-      // Limpar debug info após 3 segundos
-      setTimeout(() => setDebugInfo(''), 3000);
+      // Limpar debug info após 5 segundos
+      setTimeout(() => setDebugInfo(''), 5000);
     }
   };
 
   const fetchCategories = async () => {
-    try {
-      const response = await fetch('/api/mercadolivre/categories');
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar categorias:', error);
-    }
+    // Usar categorias fixas principais do Mercado Livre Brasil
+    const mainCategories = [
+      { id: 'MLB1055', name: 'Celulares e Telefones' },
+      { id: 'MLB1648', name: 'Informática' },
+      { id: 'MLB1051', name: 'Eletrônicos, Áudio e Vídeo' },
+      { id: 'MLB1276', name: 'Esportes e Fitness' },
+      { id: 'MLB1430', name: 'Roupas e Acessórios' },
+      { id: 'MLB1574', name: 'Casa, Móveis e Decoração' },
+      { id: 'MLB1132', name: 'Beleza e Cuidado Pessoal' },
+      { id: 'MLB1384', name: 'Bebês' },
+      { id: 'MLB1144', name: 'Carros, Motos e Outros' },
+      { id: 'MLB1367', name: 'Livros, Revistas e Comics' },
+      { id: 'MLB1196', name: 'Música, Filmes e Seriados' },
+      { id: 'MLB1182', name: 'Ferramentas e Construção' },
+      { id: 'MLB1500', name: 'Agro' },
+      { id: 'MLB1953', name: 'Serviços' }
+    ];
+    
+    setCategories(mainCategories);
   };
 
   const applyFilters = () => {
@@ -316,22 +254,24 @@ export default function AnalysisPage() {
     if (filters.priceRange !== 'all') {
       const [min, max] = filters.priceRange.split('-').map(Number);
       filtered = filtered.filter(p => {
-        if (max) return p.price >= min && p.price <= max;
+        if (max && max !== 999999) return p.price >= min && p.price <= max;
         return p.price >= min;
       });
     }
 
     // Filtro por busca
     if (filters.searchTerm.trim()) {
+      const searchLower = filters.searchTerm.toLowerCase();
       filtered = filtered.filter(p => 
-        p.title.toLowerCase().includes(filters.searchTerm.toLowerCase())
+        p.title.toLowerCase().includes(searchLower) ||
+        (p.product_name && p.product_name.toLowerCase().includes(searchLower))
       );
     }
 
     // Ordenação
     switch (filters.sortBy) {
       case 'sold_quantity_desc':
-        filtered.sort((a, b) => b.sold_quantity - a.sold_quantity);
+        filtered.sort((a, b) => (b.sold_quantity || 0) - (a.sold_quantity || 0));
         break;
       case 'price_asc':
         filtered.sort((a, b) => a.price - b.price);
@@ -404,9 +344,12 @@ export default function AnalysisPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Produtos Catalogados</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Produtos Catalogados Ativos</h1>
           <p className="text-gray-600 mt-1">
-            Analise produtos populares do Mercado Livre - {filteredProducts.length} produtos encontrados
+            Produtos catalogados e ativos do Mercado Livre - {filteredProducts.length} produtos encontrados
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            🔍 <strong>Parâmetros:</strong> status:active, categorias principais (Celulares, Informática, Eletrônicos, etc.), produtos com estoque disponível
           </p>
           {debugInfo && (
             <p className="text-sm text-blue-600 mt-1 font-medium">
@@ -556,9 +499,13 @@ export default function AnalysisPage() {
                   {/* Imagem */}
                   <div className={`${viewMode === 'list' ? 'w-24 h-24' : 'w-full h-48'} flex-shrink-0`}>
                     <img
-                      src={product.thumbnail}
+                      src={product.thumbnail || `https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=${encodeURIComponent(product.title.slice(0, 20))}`}
                       alt={product.title}
                       className="w-full h-full object-cover rounded"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=${encodeURIComponent(product.title.slice(0, 20))}`;
+                      }}
                     />
                   </div>
 

@@ -27,7 +27,7 @@ export class MercadoLivreAPI {
     }
   }
 
-  // Buscar produtos por categoria
+  // Buscar produtos por categoria (método original)
   async searchProducts(
     siteId: string = 'MLB',
     query?: string,
@@ -49,7 +49,7 @@ export class MercadoLivreAPI {
       const response = await axios.get(
         `${MERCADOLIVRE_API_BASE}/sites/${siteId}/search?${params.toString()}`,
         {
-          timeout: 10000, // 10 segundos de timeout
+          timeout: 10000,
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
           }
@@ -67,8 +67,90 @@ export class MercadoLivreAPI {
         siteId
       });
       
-      // Se der erro, retorna array vazio ao invés de lançar exceção
       return { results: [] };
+    }
+  }
+
+  // Buscar produtos catalogados ativos
+  async searchCatalogProducts(
+    siteId: string = 'MLB',
+    query?: string,
+    categoryId?: string,
+    limit: number = 50,
+    offset: number = 0
+  ): Promise<{ results: any[], total: number }> {
+    try {
+      const params = new URLSearchParams({
+        site_id: siteId,
+        status: 'active',
+        limit: limit.toString(),
+        offset: offset.toString()
+      });
+
+      if (query) params.append('q', query);
+      if (categoryId) params.append('category_id', categoryId);
+
+      console.log(`Buscando produtos catalogados: ${MERCADOLIVRE_API_BASE}/products/search?${params.toString()}`);
+      
+      const response = await axios.get(
+        `${MERCADOLIVRE_API_BASE}/products/search?${params.toString()}`,
+        {
+          timeout: 15000,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        }
+      );
+
+      console.log(`Produtos catalogados encontrados:`, response.data?.results?.length || 0);
+      
+      // Transformar produtos catalogados em formato compatível
+      const catalogProducts = (response.data?.results || []).map((product: any) => {
+        // Buscar um item representativo deste produto
+        const item = product.items?.[0]; // Pegar o primeiro item
+        
+        return {
+          id: item?.id || product.id,
+          title: product.name || product.title,
+          price: item?.price || 0,
+          currency_id: 'BRL',
+          available_quantity: item?.available_quantity || 0,
+          sold_quantity: item?.sold_quantity || 0,
+          condition: 'new',
+          listing_type_id: item?.listing_type_id || 'bronze',
+          permalink: item?.permalink || `https://lista.mercadolivre.com.br/${product.domain_id}`,
+          thumbnail: product.pictures?.[0]?.secure_url || product.pictures?.[0]?.url,
+          shipping: {
+            free_shipping: item?.shipping?.free_shipping || false,
+            mode: item?.shipping?.mode || 'not_specified',
+            tags: item?.shipping?.tags || []
+          },
+          seller: {
+            id: item?.seller?.id || 0,
+            nickname: item?.seller?.nickname || 'Vendedor',
+            car_dealer: false,
+            real_estate_agency: false,
+            tags: item?.seller?.tags || []
+          },
+          category_id: product.category_id,
+          domain_id: product.domain_id,
+          catalog_product_id: product.id,
+          product_name: product.name
+        };
+      });
+
+      return {
+        results: catalogProducts,
+        total: response.data?.paging?.total || catalogProducts.length
+      };
+    } catch (error: any) {
+      console.error('Erro ao buscar produtos catalogados:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      
+      return { results: [], total: 0 };
     }
   }
 
