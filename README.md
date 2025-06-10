@@ -1,161 +1,270 @@
-# Sistema de Análise Mercado Livre
+# Mercado Livre Analyzer
 
-Sistema web para análise de produtos mais vendidos no Mercado Livre, com cálculo automático de custos e margem de lucro ideal.
+Sistema web para análise de produtos e margens de lucro do Mercado Livre. Conecta-se à API pública do Mercado Livre e utiliza Firebase como banco de dados.
 
 ## 🚀 Funcionalidades
 
-- **Análise de Produtos**: Busca automática dos produtos mais vendidos e catalogados no Mercado Livre
-- **Cálculo de Custos**: Análise detalhada dos custos (comissão ML, taxa fixa, frete)
-- **Margem de Lucro**: Calcula o valor ideal de custo para margem ≥ 30%
-- **Salvamento no Firebase**: Armazena análises para consulta posterior
-- **Dashboard Intuitivo**: Interface moderna com gráficos e estatísticas
-- **Filtros por Categoria**: Análise segmentada por categorias do ML
+- **Análise de Produtos**: Calcule margens de lucro e custos operacionais automaticamente
+- **Tendências**: Veja os produtos mais populares do Mercado Livre
+- **Configurações Personalizáveis**: Ajuste taxas e margens conforme seu negócio
+- **Dashboard Completo**: Visualize estatísticas e relatórios detalhados
+- **Histórico de Análises**: Gerencie todos os produtos analisados
+- **Relatórios Visuais**: Gráficos e insights sobre sua performance
 
 ## 🛠️ Tecnologias
 
 - **Frontend**: Next.js 15, React 19, TypeScript
-- **UI**: Tailwind V4, ShadCN UI, Recharts
-- **Backend**: API Routes do Next.js
-- **Banco de Dados**: Firebase Firestore
-- **Integrações**: API do Mercado Livre
-- **Deploy**: Vercel (configurado)
+- **Styling**: Tailwind CSS V4, ShadCN UI
+- **Backend**: Next.js API Routes
+- **Database**: Firebase Firestore
+- **Charts**: Recharts
+- **API**: Mercado Livre API pública
 
-## 📦 Instalação
+## 📋 Pré-requisitos
 
-1. Clone o repositório:
-```bash
-git clone <seu-repositorio>
-cd ml-analise
+- Node.js 18+ ou Bun
+- Conta no Firebase
+- Conta de desenvolvedor no Mercado Livre (opcional, para APIs avançadas)
+
+## ⚙️ Instalação
+
+1. **Clone o repositório**
+   ```bash
+   git clone <seu-repositorio>
+   cd mercadolivre-analyzer
+   ```
+
+2. **Instale as dependências**
+   ```bash
+   bun install
+   # ou
+   npm install
+   ```
+
+3. **Configure as variáveis de ambiente**
+   
+   Copie o arquivo `.env.example` para `.env.local`:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Configure as variáveis no arquivo `.env.local`:
+   ```env
+   # Firebase Configuration
+   NEXT_PUBLIC_FIREBASE_API_KEY=sua_firebase_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=seu_projeto.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=seu_projeto_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=seu_projeto.appspot.com
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=seu_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=seu_app_id
+
+   # Mercado Livre API (opcional)
+   MERCADOLIVRE_CLIENT_ID=seu_client_id
+   MERCADOLIVRE_CLIENT_SECRET=seu_client_secret
+
+   # NextAuth
+   NEXTAUTH_SECRET=seu_secret_aleatorio
+   NEXTAUTH_URL=http://localhost:3000
+   ```
+
+4. **Configure o Firebase**
+
+   - Crie um projeto no [Firebase Console](https://console.firebase.google.com/)
+   - Ative o Firestore Database
+   - Copie as configurações do projeto para as variáveis de ambiente
+   - Configure as regras de segurança do Firestore:
+
+   ```javascript
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /{document=**} {
+         allow read, write: if true; // Para desenvolvimento
+         // Em produção, implemente regras de segurança adequadas
+       }
+     }
+   }
+   ```
+
+5. **Inicie o servidor de desenvolvimento**
+   ```bash
+   bun dev
+   # ou
+   npm run dev
+   ```
+
+   Acesse http://localhost:3000
+
+## 🚀 Deploy
+
+### Vercel (Recomendado)
+
+1. **Conecte seu repositório ao Vercel**
+   - Acesse [vercel.com](https://vercel.com)
+   - Importe seu repositório do GitHub
+   - Configure as variáveis de ambiente no painel da Vercel
+
+2. **Deploy automático**
+   - O Vercel fará o deploy automaticamente a cada push
+
+### Outras plataformas
+
+O projeto é compatível com qualquer plataforma que suporte Next.js:
+- Netlify
+- AWS Amplify
+- Railway
+- Render
+
+## 📖 Como Usar
+
+### 1. Configuração Inicial
+
+Acesse a página de **Configurações** e defina:
+- Margem de lucro desejada (padrão: 30%)
+- Taxa do Mercado Livre (padrão: 12%)
+- Custo de frete (padrão: 10%)
+- Investimento em publicidade (padrão: 5%)
+- Custos fixos adicionais
+
+### 2. Analisando Produtos
+
+1. Vá para **Análise de Produtos**
+2. Cole a URL do produto do Mercado Livre ou apenas o ID
+   - Exemplo: `https://produto.mercadolivre.com.br/MLB-123456789-produto`
+   - Ou apenas: `MLB-123456789`
+3. Clique em **Analisar**
+4. Veja os resultados:
+   - Breakdown completo de custos
+   - Margem de lucro atual
+   - Preço máximo de custo recomendado
+   - Análise da concorrência
+
+### 3. Explorando Tendências
+
+- Acesse **Tendências** para ver produtos populares
+- Clique em qualquer tendência para ver produtos relacionados
+- Use a busca para encontrar produtos específicos
+
+### 4. Gerenciando Produtos
+
+- Em **Produtos Salvos**, veja todas as análises anteriores
+- Filtre por status (ganhando/perdendo)
+- Busque por nome ou ID do produto
+- Exclua análises antigas
+
+### 5. Relatórios
+
+- Acesse **Relatórios** para visualizar:
+  - Distribuição de margens
+  - Status dos produtos
+  - Atividade dos últimos dias
+  - Top produtos por margem
+- Exporte relatórios em JSON
+
+## 🔧 Estrutura do Projeto
+
 ```
-
-2. Instale as dependências:
-```bash
-bun install
-```
-
-3. Configure as variáveis de ambiente criando um arquivo `.env.local`:
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyCcRs1o1MRJQHNjV-m5cyG1aB17zURnHAI
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=ml-analise.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=ml-analise
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=ml-analise.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=1067736402366
-NEXT_PUBLIC_FIREBASE_APP_ID=1:1067736402366:web:03303b5dbd934c4b18d1ef
-MERCADO_LIVRE_API_BASE=https://api.mercadolibre.com
-```
-
-4. Execute o projeto:
-```bash
-bun dev
-```
-
-## 🔧 Deploy no Vercel
-
-1. Conecte o repositório GitHub ao Vercel
-2. Configure as variáveis de ambiente no painel do Vercel
-3. Deploy automático será realizado a cada push
-
-## 🏗️ Estrutura do Projeto
-
-```
-├── app/
-│   ├── api/ml/          # API routes para Mercado Livre
-│   ├── globals.css      # Estilos globais
-│   ├── layout.tsx       # Layout principal
-│   ├── page.tsx         # Página inicial
-│   └── providers.tsx    # Providers (React Query, Toast)
-├── components/
-│   ├── ui/              # Componentes ShadCN UI
-│   ├── dashboard.tsx    # Dashboard principal
-│   ├── product-card.tsx # Card de produto
-│   ├── analysis-stats.tsx # Estatísticas
-│   └── saved-analyses.tsx # Análises salvas
-├── hooks/
-│   ├── use-products.ts  # Hook para produtos ML
-│   └── use-firebase.ts  # Hook para Firebase
-├── lib/
+mercadolivre-analyzer/
+├── app/                    # App Router do Next.js
+│   ├── api/               # API Routes
+│   ├── analysis/          # Página de análise
+│   ├── products/          # Produtos salvos
+│   ├── trends/            # Tendências
+│   ├── reports/           # Relatórios
+│   ├── settings/          # Configurações
+│   └── page.tsx           # Dashboard principal
+├── components/            # Componentes React
+│   ├── ui/               # ShadCN UI components
+│   ├── layout/           # Layout components
+│   └── dashboard/        # Dashboard components
+├── lib/                  # Utilitários
 │   ├── firebase.ts      # Configuração Firebase
-│   ├── mercado-livre.ts # Utilitários ML
-│   └── utils.ts         # Utilitários gerais
-└── .env.local           # Variáveis de ambiente
+│   ├── firebase-service.ts # Serviços Firebase
+│   ├── mercadolivre-api.ts # API Mercado Livre
+│   └── utils.ts          # Utilitários gerais
+├── types/                # Tipos TypeScript
+└── public/               # Arquivos públicos
 ```
 
-## 📊 Como Funciona
+## 📊 Funcionalidades da API
 
-### 1. Busca de Produtos
-- Utiliza a API do Mercado Livre (`/highlights` e `/search`)
-- Filtra apenas produtos catalogados
-- Ordena por quantidade vendida
+### Endpoints Principais
 
-### 2. Cálculo de Custos
-- **Comissão**: 12% (Clássico) ou 17% (Premium)
-- **Taxa Fixa**: Até R$ 6,75 baseado no preço
-- **Frete**: Estimativa baseada no valor do produto
+- `/api/mercadolivre/trends` - Buscar tendências
+- `/api/mercadolivre/search` - Buscar produtos
+- `/api/analysis` - Analisar produtos (POST/GET)
+- `/api/settings` - Configurações (GET/POST)
+- `/api/dashboard` - Estatísticas do dashboard
 
-### 3. Margem de Lucro
-- Calcula receita líquida (preço - custos)
-- Sugere custo máximo para 30%+ de lucro
-- Classifica produtos como lucrativos ou não
+### Integração Mercado Livre
 
-## 🔥 Recursos Principais
+O sistema utiliza a API pública do Mercado Livre:
+- Busca de produtos por categoria/palavra-chave
+- Informações de produtos (preço, vendas, etc.)
+- Tendências e produtos populares
+- Análise de concorrência
 
-### Dashboard
-- Estatísticas em tempo real
-- Gráficos de distribuição por margem
-- Top 3 produtos mais lucrativos
-- Filtros por categoria
+## 🎨 Personalização
 
-### Análise de Produtos
-- Card detalhado para cada produto
-- Link direto para o produto no ML
-- Botão para salvar análise
-- Cálculos detalhados de custo
+### Cores e Tema
 
-### Firebase Integration
-- Salvamento automático de análises
-- Histórico de produtos analisados
-- Notas personalizadas
-- Sincronização em tempo real
+O sistema usa Tailwind CSS V4. Para personalizar as cores, edite o arquivo `app/globals.css`.
 
-## 🎯 Regras de Negócio
+### Configurações de Negócio
 
-### Custos do Mercado Livre
-- **Anúncio Clássico**: 10-14% de comissão
-- **Anúncio Premium**: 15-19% de comissão
-- **Taxa Fixa**: Varia de acordo com o preço
-- **Frete Grátis**: Custo assumido pelo vendedor
+Ajuste os parâmetros padrão em:
+- `lib/firebase-service.ts` - Configurações padrão
+- `app/settings/page.tsx` - Interface de configuração
 
-### Margem de Lucro
-- **Meta**: ≥ 30% de margem líquida
-- **Aceitável**: 15-30% de margem
-- **Baixa**: < 15% de margem
+### Fórmulas de Cálculo
+
+Os cálculos de margem estão em `lib/mercadolivre-api.ts` no método `calculateProductAnalysis`.
 
 ## 🔒 Segurança
 
-- Variáveis de ambiente para chaves sensíveis
-- Regras do Firebase configuradas
-- CORS configurado para domínio específico
-- Rate limiting nas APIs
+### Produção
 
-## 📱 Responsividade
+Para uso em produção:
 
-- Design mobile-first
-- Interface adaptativa
-- Gráficos responsivos
-- Navegação otimizada para touch
+1. **Configure regras de segurança do Firebase**
+2. **Implemente autenticação** (NextAuth.js está incluído)
+3. **Use HTTPS** sempre
+4. **Configure CORS** adequadamente
+5. **Valide dados** do lado do servidor
 
-## 🤝 Contribuição
+### Variáveis de Ambiente
 
-1. Fork o projeto
-2. Crie uma branch para sua feature
-3. Commit suas mudanças
-4. Push para a branch
+Nunca commite o arquivo `.env.local`. Use sempre `.env.example` como template.
+
+## 🤝 Contribuindo
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
 
-## 📄 Licença
+## 📝 Licença
 
-Este projeto está sob a licença MIT.
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 🆘 Suporte
+
+Para dúvidas ou problemas:
+
+1. Verifique a documentação
+2. Procure por issues similares no GitHub
+3. Abra uma nova issue com detalhes do problema
+
+## 🎯 Roadmap
+
+- [ ] Autenticação de usuários
+- [ ] API webhooks para atualizações automáticas
+- [ ] Alertas de preço
+- [ ] Integração com outras marketplaces
+- [ ] App mobile
+- [ ] IA para recomendações de produtos
 
 ---
 
-**Desenvolvido para análise de oportunidades no Mercado Livre** 🛒
+**Desenvolvido com ❤️ para vendedores do Mercado Livre**
