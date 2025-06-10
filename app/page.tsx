@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Calculator, Database, Package, ExternalLink, CreditCard, Truck } from "lucide-react";
+import { SaveAnalysisButton } from "@/components/save-analysis-button";
 
 interface ProductAnalysis {
   product: any;
@@ -322,24 +323,25 @@ export default async function Home() {
                           </div>
                         </div>
 
-                        {/* Ações */}
-                        <div className="space-y-2">
-                          <div className="text-gray-700 font-medium">
-                            Ações
-                          </div>
-                          <div className="space-y-2">
-                            <button
-                              onClick={() => window.open(analysis.product.permalink, '_blank')}
-                              className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center justify-center gap-2"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              Ver no ML
-                            </button>
-                            <div className="text-xs text-gray-500 text-center">
-                              Tipo: {analysis.product.listing_type_id?.includes('gold') ? 'Premium' : 'Clássico'}
-                            </div>
-                          </div>
-                        </div>
+                      {/* Ações */}
+<div className="space-y-2">
+  <div className="text-gray-700 font-medium">
+    Ações
+  </div>
+  <div className="space-y-2">
+    <button
+      onClick={() => window.open(analysis.product.permalink, '_blank')}
+      className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 flex items-center justify-center gap-2"
+    >
+      <ExternalLink className="h-4 w-4" />
+      Ver no ML
+    </button>
+    <SaveAnalysisButton analysis={analysis} />
+    <div className="text-xs text-gray-500 text-center">
+      Tipo: {analysis.product.listing_type_id?.includes('gold') ? 'Premium' : 'Clássico'}
+    </div>
+  </div>
+</div>
                       </div>
                     </div>
                   );
