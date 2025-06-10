@@ -1,10 +1,11 @@
 # Mercado Livre Analyzer
 
-Sistema web para análise de produtos e margens de lucro do Mercado Livre. Conecta-se à API pública do Mercado Livre e utiliza Firebase como banco de dados.
+Sistema web para análise de produtos e margens de lucro do Mercado Livre. **Carrega automaticamente centenas de produtos catalogados** permitindo filtrar por mais vendidos, categorias e faixas de preço. Conecta-se à API pública do Mercado Livre e utiliza Firebase como banco de dados.
 
 ## 🚀 Funcionalidades
 
-- **Análise de Produtos**: Calcule margens de lucro e custos operacionais automaticamente
+- **Catálogo Completo**: Explore centenas de produtos catalogados do Mercado Livre automaticamente
+- **Análise de Produtos**: Calcule margens de lucro e custos operacionais com um clique
 - **Tendências**: Veja os produtos mais populares do Mercado Livre
 - **Configurações Personalizáveis**: Ajuste taxas e margens conforme seu negócio
 - **Dashboard Completo**: Visualize estatísticas e relatórios detalhados
@@ -126,18 +127,22 @@ Acesse a página de **Configurações** e defina:
 - Investimento em publicidade (padrão: 5%)
 - Custos fixos adicionais
 
-### 2. Analisando Produtos
+### 2. Explorando o Catálogo de Produtos
 
-1. Vá para **Análise de Produtos**
-2. Cole a URL do produto do Mercado Livre ou apenas o ID
-   - Exemplo: `https://produto.mercadolivre.com.br/MLB-123456789-produto`
-   - Ou apenas: `MLB-123456789`
-3. Clique em **Analisar**
-4. Veja os resultados:
+1. Vá para **Catálogo de Produtos**
+2. O sistema carrega automaticamente centenas de produtos catalogados
+3. Use os filtros para encontrar produtos específicos:
+   - **Busca por nome**: Digite palavras-chave
+   - **Ordenação**: Mais vendidos, menor/maior preço, A-Z
+   - **Faixa de preço**: Filtre por ranges de valor
+   - **Categoria**: Selecione categorias específicas
+4. Clique em **Analisar** em qualquer produto para ver:
    - Breakdown completo de custos
    - Margem de lucro atual
    - Preço máximo de custo recomendado
    - Análise da concorrência
+
+**💡 Dica**: Produtos com badges "Mais vendido" (100+ vendas) e "Top vendas" (1000+ vendas) são ideais para análise!
 
 ### 3. Explorando Tendências
 

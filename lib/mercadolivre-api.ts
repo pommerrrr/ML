@@ -32,7 +32,8 @@ export class MercadoLivreAPI {
     siteId: string = 'MLB',
     query?: string,
     categoryId?: string,
-    limit: number = 50
+    limit: number = 50,
+    sortBy?: string
   ): Promise<{ results: MercadoLivreProduct[] }> {
     try {
       const params = new URLSearchParams({
@@ -41,6 +42,7 @@ export class MercadoLivreAPI {
 
       if (query) params.append('q', query);
       if (categoryId) params.append('category', categoryId);
+      if (sortBy) params.append('sort', sortBy);
 
       const response = await axios.get(
         `${MERCADOLIVRE_API_BASE}/sites/${siteId}/search?${params.toString()}`

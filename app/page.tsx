@@ -6,7 +6,7 @@ import { ProfitChart } from '../components/dashboard/profit-chart';
 import { RecentProducts } from '../components/dashboard/recent-products';
 import { DashboardStats, ProductAnalysis } from '../types';
 import { Button } from '../components/ui/button';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HomePage() {
@@ -59,13 +59,13 @@ export default function HomePage() {
         <div className="flex space-x-3">
           <Link href="/analysis">
             <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Analisar Produto
+              <Search className="h-4 w-4 mr-2" />
+              Explorar Catálogo
             </Button>
           </Link>
           <Link href="/trends">
             <Button variant="outline">
-              <Search className="h-4 w-4 mr-2" />
+              <TrendingUp className="h-4 w-4 mr-2" />
               Ver Tendências
             </Button>
           </Link>
@@ -89,21 +89,21 @@ export default function HomePage() {
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-8 text-center">
           <div className="mx-auto max-w-md">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Comece a analisar produtos!
+              Explore o catálogo completo!
             </h3>
             <p className="text-gray-600 mb-6">
-              Descubra os produtos mais rentáveis do Mercado Livre e calcule suas margens de lucro automaticamente.
+              Descubra centenas de produtos catalogados do Mercado Livre, filtre por mais vendidos e calcule suas margens de lucro automaticamente.
             </p>
             <div className="space-y-3">
               <Link href="/analysis">
                 <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Analisar Primeiro Produto
+                  <Search className="h-4 w-4 mr-2" />
+                  Explorar Produtos Catalogados
                 </Button>
               </Link>
               <Link href="/trends">
                 <Button variant="outline" className="w-full">
-                  <Search className="h-4 w-4 mr-2" />
+                  <TrendingUp className="h-4 w-4 mr-2" />
                   Ver Produtos em Tendência
                 </Button>
               </Link>

@@ -14,7 +14,7 @@ import {
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
-  { name: 'Análise de Produtos', href: '/analysis', icon: Search },
+  { name: 'Catálogo de Produtos', href: '/analysis', icon: Search },
   { name: 'Produtos Salvos', href: '/products', icon: Package },
   { name: 'Tendências', href: '/trends', icon: TrendingUp },
   { name: 'Relatórios', href: '/reports', icon: BarChart3 },
