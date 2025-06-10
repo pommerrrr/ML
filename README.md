@@ -1,16 +1,38 @@
 # Mercado Livre Analyzer
 
-Sistema web para análise de produtos e margens de lucro do Mercado Livre. **Carrega automaticamente centenas de produtos catalogados** permitindo filtrar por mais vendidos, categorias e faixas de preço. Conecta-se à API pública do Mercado Livre e utiliza Firebase como banco de dados.
+Sistema web para análise de produtos e margens de lucro do Mercado Livre. **Sistema híbrido que SEMPRE funciona**: tenta buscar produtos reais da API do Mercado Livre e, se falhar, usa produtos de demonstração realistas. Utiliza Firebase como banco de dados.
 
 ## 🚀 Funcionalidades
 
-- **Catálogo Completo**: Explore centenas de produtos catalogados do Mercado Livre automaticamente
-- **Análise de Produtos**: Calcule margens de lucro e custos operacionais com um clique
-- **Tendências**: Veja os produtos mais populares do Mercado Livre
+- **Sistema Híbrido Inteligente**: Busca produtos reais da API do ML, com fallback para produtos de demonstração
+- **Análise Completa**: Calcule margens de lucro e custos operacionais automaticamente
+- **Filtros Avançados**: Por categoria, preço, mais vendidos, busca por nome
 - **Configurações Personalizáveis**: Ajuste taxas e margens conforme seu negócio
 - **Dashboard Completo**: Visualize estatísticas e relatórios detalhados
 - **Histórico de Análises**: Gerencie todos os produtos analisados
 - **Relatórios Visuais**: Gráficos e insights sobre sua performance
+
+## 🔧 Sistema Híbrido - SEMPRE Funciona
+
+### **Como Funciona:**
+
+```
+1º Tentativa: API Real do Mercado Livre
+   ├─ Busca produtos por termos populares
+   ├─ Filtra produtos válidos (preço > 0, título, etc.)
+   └─ Ordena por mais vendidos
+
+2º Tentativa: Produtos de Demonstração
+   ├─ 10 produtos realistas com dados reais
+   ├─ URLs funcionais do Mercado Livre
+   ├─ Imagens e preços atualizados
+   └─ Permite testar todas as funcionalidades
+```
+
+### **Indicadores Visuais:**
+- 🟢 **"API Real"** - Produtos diretos do Mercado Livre
+- 🟡 **"Demonstração"** - Produtos para teste das funcionalidades
+- ⚠️ **Aviso laranja** - Quando está em modo demonstração
 
 ## 🛠️ Tecnologias
 
@@ -19,13 +41,13 @@ Sistema web para análise de produtos e margens de lucro do Mercado Livre. **Car
 - **Backend**: Next.js API Routes
 - **Database**: Firebase Firestore
 - **Charts**: Recharts
-- **API**: Mercado Livre API pública
+- **API**: Mercado Livre API + Sistema de Fallback
 
 ## 📋 Pré-requisitos
 
 - Node.js 18+ ou Bun
 - Conta no Firebase
-- Conta de desenvolvedor no Mercado Livre (opcional, para APIs avançadas)
+- Conta de desenvolvedor no Mercado Livre (opcional)
 
 ## ⚙️ Instalação
 
@@ -58,10 +80,6 @@ Sistema web para análise de produtos e margens de lucro do Mercado Livre. **Car
    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=seu_projeto.appspot.com
    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=seu_sender_id
    NEXT_PUBLIC_FIREBASE_APP_ID=seu_app_id
-
-   # Mercado Livre API (opcional)
-   MERCADOLIVRE_CLIENT_ID=seu_client_id
-   MERCADOLIVRE_CLIENT_SECRET=seu_client_secret
 
    # NextAuth
    NEXTAUTH_SECRET=seu_secret_aleatorio
@@ -96,25 +114,29 @@ Sistema web para análise de produtos e margens de lucro do Mercado Livre. **Car
 
    Acesse http://localhost:3000
 
-## 🚀 Deploy
+## 🚀 Deploy no Vercel
 
-### Vercel (Recomendado)
+### **Configuração Automática**
 
 1. **Conecte seu repositório ao Vercel**
    - Acesse [vercel.com](https://vercel.com)
    - Importe seu repositório do GitHub
    - Configure as variáveis de ambiente no painel da Vercel
 
-2. **Deploy automático**
+2. **Variáveis de Ambiente no Vercel:**
+   ```env
+   NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyCcRs1o1MRJQHNjV-m5cyG1aB17zURnHAI
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=ml-analise.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=ml-analise
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=ml-analise.firebasestorage.app
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=1067736402366
+   NEXT_PUBLIC_FIREBASE_APP_ID=1:1067736402366:web:03303b5dbd934c4b18d1ef
+   NEXTAUTH_SECRET=sua_chave_secreta_aleatoria
+   NEXTAUTH_URL=https://seu-dominio.vercel.app
+   ```
+
+3. **Deploy automático**
    - O Vercel fará o deploy automaticamente a cada push
-
-### Outras plataformas
-
-O projeto é compatível com qualquer plataforma que suporte Next.js:
-- Netlify
-- AWS Amplify
-- Railway
-- Render
 
 ## 📖 Como Usar
 
@@ -130,7 +152,7 @@ Acesse a página de **Configurações** e defina:
 ### 2. Explorando o Catálogo de Produtos
 
 1. Vá para **Catálogo de Produtos**
-2. O sistema carrega automaticamente centenas de produtos catalogados
+2. O sistema carrega automaticamente produtos (reais ou demonstração)
 3. Use os filtros para encontrar produtos específicos:
    - **Busca por nome**: Digite palavras-chave
    - **Ordenação**: Mais vendidos, menor/maior preço, A-Z
@@ -142,88 +164,80 @@ Acesse a página de **Configurações** e defina:
    - Preço máximo de custo recomendado
    - Análise da concorrência
 
-**💡 Dica**: Produtos com badges "Mais vendido" (100+ vendas) e "Top vendas" (1000+ vendas) são ideais para análise!
+### 3. Sistema Inteligente
 
-### 3. Explorando Tendências
+**🟢 Quando a API está funcionando:**
+- Produtos reais do Mercado Livre
+- Dados atualizados em tempo real
+- Links funcionais para os anúncios
+- Imagens e preços reais
 
-- Acesse **Tendências** para ver produtos populares
-- Clique em qualquer tendência para ver produtos relacionados
-- Use a busca para encontrar produtos específicos
+**🟡 Quando a API não está disponível:**
+- Produtos de demonstração realistas
+- 10 produtos com dados baseados em produtos reais
+- Todas as funcionalidades continuam funcionando
+- Permite testar análises e filtros
 
-### 4. Gerenciando Produtos
+### 4. Análise Detalhada
 
-- Em **Produtos Salvos**, veja todas as análises anteriores
-- Filtre por status (ganhando/perdendo)
-- Busque por nome ou ID do produto
-- Exclua análises antigas
+O sistema calcula automaticamente:
+1. **Custos do ML:** Taxa da plataforma (12% padrão)
+2. **Frete:** Percentual do preço (10% padrão) 
+3. **Publicidade:** Investment em ads (5% padrão)
+4. **Custos fixos:** Embalagem, etiquetas, etc.
+5. **Valor líquido:** Preço - todos os custos
+6. **Preço de custo máximo:** Para atingir 30% de margem
 
-### 5. Relatórios
+**Fórmula:** `Custo Máximo = Valor Líquido / (1 + Margem Desejada/100)`
 
-- Acesse **Relatórios** para visualizar:
-  - Distribuição de margens
-  - Status dos produtos
-  - Atividade dos últimos dias
-  - Top produtos por margem
-- Exporte relatórios em JSON
+## 🔍 Produtos de Demonstração Incluídos
 
-## 🔧 Estrutura do Projeto
+1. **Samsung Galaxy A55 5G** - R$ 1.899,99 (3.254 vendidos)
+2. **Notebook Lenovo IdeaPad 3** - R$ 2.299,99 (1.847 vendidos)  
+3. **Fone JBL Bluetooth** - R$ 449,99 (5.641 vendidos)
+4. **Apple Watch Series 9** - R$ 3.299,99 (892 vendidos)
+5. **Air Fryer Mondial** - R$ 189,99 (8.934 vendidos)
+6. **Tênis Nike Air Max** - R$ 349,99 (6.527 vendidos)
+7. **Smart TV Samsung 55"** - R$ 2.199,99 (1.234 vendidos)
+8. **PlayStation 5 Slim** - R$ 3.799,99 (456 vendidos)
+9. **Perfume Ferrari Black** - R$ 279,99 (2.847 vendidos)
+10. **Camiseta Premium** - R$ 59,99 (12.847 vendidos)
 
-```
-mercadolivre-analyzer/
-├── app/                    # App Router do Next.js
-│   ├── api/               # API Routes
-│   ├── analysis/          # Página de análise
-│   ├── products/          # Produtos salvos
-│   ├── trends/            # Tendências
-│   ├── reports/           # Relatórios
-│   ├── settings/          # Configurações
-│   └── page.tsx           # Dashboard principal
-├── components/            # Componentes React
-│   ├── ui/               # ShadCN UI components
-│   ├── layout/           # Layout components
-│   └── dashboard/        # Dashboard components
-├── lib/                  # Utilitários
-│   ├── firebase.ts      # Configuração Firebase
-│   ├── firebase-service.ts # Serviços Firebase
-│   ├── mercadolivre-api.ts # API Mercado Livre
-│   └── utils.ts          # Utilitários gerais
-├── types/                # Tipos TypeScript
-└── public/               # Arquivos públicos
-```
+Todos com:
+- ✅ **URLs reais** do Mercado Livre
+- ✅ **Imagens reais** dos produtos
+- ✅ **Dados de vendas** realistas
+- ✅ **Funcionam na análise** completa
 
 ## 📊 Funcionalidades da API
 
 ### Endpoints Principais
 
+- `/api/mercadolivre/catalog` - **Sistema híbrido** (produtos reais + fallback)
+- `/api/mercadolivre/search` - Buscar produtos tradicionais
 - `/api/mercadolivre/trends` - Buscar tendências
-- `/api/mercadolivre/search` - Buscar produtos
 - `/api/analysis` - Analisar produtos (POST/GET)
 - `/api/settings` - Configurações (GET/POST)
 - `/api/dashboard` - Estatísticas do dashboard
 
-### Integração Mercado Livre
+### Sistema Híbrido de Busca
 
-O sistema utiliza a API pública do Mercado Livre:
-- Busca de produtos por categoria/palavra-chave
-- Informações de produtos (preço, vendas, etc.)
-- Tendências e produtos populares
-- Análise de concorrência
+```javascript
+// 1º Tentativa: API Real
+await fetch('/sites/MLB/search?q=celular&limit=20')
 
-## 🎨 Personalização
+// 2º Tentativa: Produtos de Demonstração  
+return getDemoProducts()
+```
 
-### Cores e Tema
+## 🎯 Garantias do Sistema
 
-O sistema usa Tailwind CSS V4. Para personalizar as cores, edite o arquivo `app/globals.css`.
-
-### Configurações de Negócio
-
-Ajuste os parâmetros padrão em:
-- `lib/firebase-service.ts` - Configurações padrão
-- `app/settings/page.tsx` - Interface de configuração
-
-### Fórmulas de Cálculo
-
-Os cálculos de margem estão em `lib/mercadolivre-api.ts` no método `calculateProductAnalysis`.
+- ✅ **SEMPRE funciona** (híbrido: real + demo)
+- ✅ **Interface responsiva** em qualquer dispositivo
+- ✅ **Filtros funcionais** independente da fonte dos dados
+- ✅ **Análise completa** funciona com todos os produtos
+- ✅ **Visual profissional** com indicadores de modo
+- ✅ **Dados realistas** mesmo em modo demonstração
 
 ## 🔒 Segurança
 
@@ -237,10 +251,6 @@ Para uso em produção:
 4. **Configure CORS** adequadamente
 5. **Valide dados** do lado do servidor
 
-### Variáveis de Ambiente
-
-Nunca commite o arquivo `.env.local`. Use sempre `.env.example` como template.
-
 ## 🤝 Contribuindo
 
 1. Faça um fork do projeto
@@ -249,27 +259,28 @@ Nunca commite o arquivo `.env.local`. Use sempre `.env.example` como template.
 4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
 
+## 🆘 Resolução de Problemas
+
+### Problemas Comuns
+
+1. **"Nenhum produto encontrado"** → Sistema automaticamente usa produtos de demonstração
+2. **Erro de CORS** → Configure as variáveis de ambiente corretamente
+3. **Firebase Error** → Verifique as configurações do Firebase
+4. **Build Error** → Execute `bun install` novamente
+
+### Debug
+
+O sistema inclui logs detalhados:
+- Console do navegador mostra tentativas de API
+- Feedback visual na interface sobre o status
+- Indicadores visuais quando está em modo demonstração
+
 ## 📝 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-## 🆘 Suporte
-
-Para dúvidas ou problemas:
-
-1. Verifique a documentação
-2. Procure por issues similares no GitHub
-3. Abra uma nova issue com detalhes do problema
-
-## 🎯 Roadmap
-
-- [ ] Autenticação de usuários
-- [ ] API webhooks para atualizações automáticas
-- [ ] Alertas de preço
-- [ ] Integração com outras marketplaces
-- [ ] App mobile
-- [ ] IA para recomendações de produtos
-
 ---
 
 **Desenvolvido com ❤️ para vendedores do Mercado Livre**
+
+**Sistema Híbrido Garantido: SEMPRE funciona, com produtos reais ou demonstração! 🚀**

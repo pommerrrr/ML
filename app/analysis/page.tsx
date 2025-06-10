@@ -43,6 +43,7 @@ export default function AnalysisPage() {
   const [analysis, setAnalysis] = useState<ProductAnalysis | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [debugInfo, setDebugInfo] = useState<string>('');
+  const [isUsingDemoProducts, setIsUsingDemoProducts] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     category: 'all',
     sortBy: 'sold_quantity_desc',
@@ -61,160 +62,57 @@ export default function AnalysisPage() {
 
   const fetchCatalogProducts = async () => {
     setLoading(true);
-    setDebugInfo('Iniciando busca de produtos catalogados...');
+    setDebugInfo('Iniciando busca de produtos...');
     
     try {
-      console.log('Iniciando busca de produtos catalogados...');
+      console.log('Iniciando busca de produtos...');
+      setDebugInfo('Conectando à API do Mercado Livre...');
       
-      let allProducts: MercadoLivreProduct[] = [];
-      let totalFetched = 0;
+      // Busca direta usando o novo endpoint híbrido
+      const response = await fetch('/api/mercadolivre/catalog', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-      // Categorias principais para buscar produtos catalogados
-      const popularCategories = [
-        'MLB1055', // Celulares e Telefones
-        'MLB1648', // Informática
-        'MLB1051', // Eletrônicos, Áudio e Vídeo
-        'MLB1276', // Esportes e Fitness
-        'MLB1430', // Roupas e Acessórios
-        'MLB1574', // Casa, Móveis e Decoração
-        'MLB1132', // Beleza e Cuidado Pessoal
-        'MLB1384', // Bebês
-        'MLB1144', // Carros, Motos e Outros
-        'MLB1367'  // Livros, Revistas e Comics
-      ];
-
-      // Buscar produtos catalogados por categoria
-      for (let i = 0; i < Math.min(popularCategories.length, 5); i++) {
-        const categoryId = popularCategories[i];
-        try {
-          setDebugInfo(`Buscando produtos catalogados da categoria ${categoryId}...`);
-          console.log(`Buscando produtos catalogados da categoria: ${categoryId}`);
-          
-          const response = await fetch(`/api/mercadolivre/catalog?category_id=${categoryId}&limit=30&offset=0`);
-          
-          if (response.ok) {
-            const data = await response.json();
-            console.log(`Encontrados ${data.results?.length || 0} produtos catalogados na categoria ${categoryId}`);
-            
-            if (data.results && Array.isArray(data.results)) {
-              allProducts = [...allProducts, ...data.results];
-              totalFetched += data.results.length;
-              setDebugInfo(`Coletados ${totalFetched} produtos catalogados até agora...`);
-            }
-          } else {
-            console.error(`Erro na busca catalogada para categoria ${categoryId}:`, response.status);
-            setDebugInfo(`Erro na categoria ${categoryId}, continuando...`);
-          }
-          
-          // Delay entre requests
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error) {
-          console.error(`Erro ao buscar categoria ${categoryId}:`, error);
-          setDebugInfo(`Erro na categoria ${categoryId}, tentando próxima...`);
-        }
-      }
-
-      // Se não encontrou produtos por categoria, tenta busca geral por queries populares
-      if (allProducts.length === 0) {
-        setDebugInfo('Buscando produtos catalogados com termos populares...');
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Resposta da API:', data);
         
-        const popularTerms = ['celular', 'notebook', 'fone', 'tênis', 'perfume'];
-        
-        for (const term of popularTerms.slice(0, 3)) {
-          try {
-            setDebugInfo(`Buscando produtos catalogados: ${term}...`);
-            
-            const response = await fetch(`/api/mercadolivre/catalog?q=${encodeURIComponent(term)}&limit=30`);
-            
-            if (response.ok) {
-              const data = await response.json();
-              if (data.results && Array.isArray(data.results)) {
-                allProducts = [...allProducts, ...data.results];
-                totalFetched += data.results.length;
-                setDebugInfo(`Coletados ${totalFetched} produtos catalogados...`);
-              }
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          } catch (error) {
-            console.error(`Erro ao buscar termo ${term}:`, error);
-          }
-        }
-      }
-
-      // Se ainda não encontrou, tenta busca geral
-      if (allProducts.length === 0) {
-        setDebugInfo('Buscando produtos catalogados sem filtros...');
-        try {
-          const response = await fetch('/api/mercadolivre/catalog?limit=50');
-          if (response.ok) {
-            const data = await response.json();
-            if (data.results && Array.isArray(data.results)) {
-              allProducts = data.results;
-              setDebugInfo(`Busca geral encontrou ${allProducts.length} produtos catalogados`);
-            }
-          }
-        } catch (error) {
-          console.error('Erro na busca geral catalogada:', error);
-        }
-      }
-
-      console.log(`Total de produtos catalogados coletados: ${allProducts.length}`);
-      setDebugInfo(`Total coletado: ${allProducts.length} produtos catalogados. Processando...`);
-
-      // Remover duplicatas por ID
-      const uniqueProducts = allProducts.filter((product, index, self) => 
-        index === self.findIndex(p => p.id === product.id)
-      );
-
-      // Filtrar produtos válidos
-      const validProducts = uniqueProducts.filter(p => 
-        p && p.id && p.title && p.price && p.price > 0
-      );
-
-      console.log(`Produtos catalogados válidos: ${validProducts.length}`);
-      setDebugInfo(`Produtos válidos: ${validProducts.length}`);
-
-      // Ordenar por quantidade vendida
-      validProducts.sort((a, b) => (b.sold_quantity || 0) - (a.sold_quantity || 0));
-
-      if (validProducts.length === 0) {
-        setDebugInfo('Nenhum produto catalogado encontrado, usando busca tradicional...');
-        
-        // Fallback para busca tradicional se produtos catalogados não funcionarem
-        try {
-          const fallbackTerms = ['celular', 'notebook', 'fone'];
-          let fallbackProducts: MercadoLivreProduct[] = [];
+        if (data.results && Array.isArray(data.results) && data.results.length > 0) {
+          const isDemoData = data.source === 'demo_products';
+          setIsUsingDemoProducts(isDemoData);
           
-          for (const term of fallbackTerms) {
-            const response = await fetch(`/api/mercadolivre/search?q=${encodeURIComponent(term)}&limit=20`);
-            if (response.ok) {
-              const data = await response.json();
-              if (data.results && Array.isArray(data.results)) {
-                fallbackProducts = [...fallbackProducts, ...data.results];
-              }
-            }
-          }
+          setDebugInfo(`${data.results.length} produtos carregados (${isDemoData ? 'demonstração' : 'API real'})`);
           
-          if (fallbackProducts.length > 0) {
-            setProducts(fallbackProducts.slice(0, 100));
-            setDebugInfo(`Carregados ${fallbackProducts.length} produtos tradicionais`);
-          } else {
-            throw new Error('Nenhum produto encontrado');
-          }
-        } catch (fallbackError) {
-          console.error('Erro no fallback:', fallbackError);
-          setDebugInfo('Erro ao buscar produtos. Tente recarregar a página.');
+          // Processar produtos
+          const validProducts = data.results.filter(p => 
+            p && p.id && p.title && p.price && p.price > 0
+          );
+
+          // Ordenar por quantidade vendida
+          validProducts.sort((a, b) => (b.sold_quantity || 0) - (a.sold_quantity || 0));
+          
+          setProducts(validProducts);
+          setDebugInfo(`✅ Sucesso! ${validProducts.length} produtos carregados${isDemoData ? ' (demonstração)' : ''}`);
+          
+          console.log('Produtos carregados:', validProducts.length);
+        } else {
+          throw new Error('Nenhum produto retornado da API');
         }
       } else {
-        setProducts(validProducts);
-        setDebugInfo(`Sucesso! ${validProducts.length} produtos catalogados carregados`);
+        throw new Error(`Erro HTTP: ${response.status}`);
       }
     } catch (error) {
-      console.error('Erro geral ao buscar produtos catalogados:', error);
-      setDebugInfo(`Erro: ${error}. Tente recarregar a página.`);
+      console.error('Erro ao buscar produtos:', error);
+      setDebugInfo(`❌ Erro: ${error}. Recarregue a página para tentar novamente.`);
+      
+      // Em caso de erro total, mostrar mensagem clara
+      setProducts([]);
     } finally {
       setLoading(false);
+      
       // Limpar debug info após 5 segundos
       setTimeout(() => setDebugInfo(''), 5000);
     }
@@ -323,6 +221,28 @@ export default function AnalysisPage() {
     });
   };
 
+  const getProductImage = (product: MercadoLivreProduct) => {
+    // Tenta várias fontes de imagem
+    if (product.thumbnail) {
+      // Converte para imagem de maior resolução se possível
+      return product.thumbnail.replace('-I.webp', '-F.webp').replace('-S.webp', '-F.webp');
+    }
+    
+    // Fallback para placeholder personalizado
+    const shortTitle = product.title.slice(0, 15).replace(/[^a-zA-Z0-9 ]/g, '');
+    return `https://via.placeholder.com/400x300/e5e7eb/6b7280?text=${encodeURIComponent(shortTitle)}`;
+  };
+
+  const getProductLink = (product: MercadoLivreProduct) => {
+    // Gera link funcional para o produto
+    if (product.permalink) {
+      return product.permalink;
+    }
+    
+    // Fallback para URL padrão do ML
+    return `https://produto.mercadolivre.com.br/${product.id}`;
+  };
+
   const priceRanges = [
     { value: 'all', label: 'Todos os preços' },
     { value: '0-50', label: 'Até R$ 50' },
@@ -344,17 +264,34 @@ export default function AnalysisPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Produtos Catalogados Ativos</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isUsingDemoProducts ? 'Produtos de Demonstração' : 'Produtos Catalogados Ativos'}
+          </h1>
           <p className="text-gray-600 mt-1">
-            Produtos catalogados e ativos do Mercado Livre - {filteredProducts.length} produtos encontrados
+            {isUsingDemoProducts 
+              ? `Produtos para demonstração das funcionalidades - ${filteredProducts.length} produtos`
+              : `Produtos catalogados e ativos do Mercado Livre - ${filteredProducts.length} produtos encontrados`
+            }
           </p>
-          <p className="text-xs text-gray-500 mt-1">
-            🔍 <strong>Parâmetros:</strong> status:active, categorias principais (Celulares, Informática, Eletrônicos, etc.), produtos com estoque disponível
-          </p>
+          {!isUsingDemoProducts && (
+            <p className="text-xs text-gray-500 mt-1">
+              🔍 <strong>Parâmetros de busca:</strong> Produtos catalogados (gold_special), condição nova, ordenação por vendas, 4 categorias principais + termos populares, até 200 produtos únicos
+            </p>
+          )}
+          {isUsingDemoProducts && (
+            <p className="text-xs text-orange-600 mt-1">
+              📊 <strong>Demonstração:</strong> Produtos reais do ML para teste das funcionalidades (dados estáticos)
+            </p>
+          )}
           {debugInfo && (
             <p className="text-sm text-blue-600 mt-1 font-medium">
               {debugInfo}
             </p>
+          )}
+          {isUsingDemoProducts && (
+            <div className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded">
+              ⚠️ <strong>Modo demonstração:</strong> API do ML indisponível. Produtos para demonstração das funcionalidades.
+            </div>
           )}
         </div>
         
@@ -499,12 +436,12 @@ export default function AnalysisPage() {
                   {/* Imagem */}
                   <div className={`${viewMode === 'list' ? 'w-24 h-24' : 'w-full h-48'} flex-shrink-0`}>
                     <img
-                      src={product.thumbnail || `https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=${encodeURIComponent(product.title.slice(0, 20))}`}
+                      src={getProductImage(product)}
                       alt={product.title}
-                      className="w-full h-full object-cover rounded"
+                      className="w-full h-full object-cover rounded bg-gray-100"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = `https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=${encodeURIComponent(product.title.slice(0, 20))}`;
+                        target.src = `https://via.placeholder.com/400x300/e5e7eb/6b7280?text=${encodeURIComponent(product.title.slice(0, 15))}`;
                       }}
                     />
                   </div>
@@ -558,6 +495,12 @@ export default function AnalysisPage() {
                           Top vendas
                         </Badge>
                       )}
+
+                      {isUsingDemoProducts && (
+                        <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700">
+                          Demo
+                        </Badge>
+                      )}
                     </div>
 
                     <div className="flex space-x-2">
@@ -578,7 +521,8 @@ export default function AnalysisPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(product.permalink, '_blank')}
+                        onClick={() => window.open(getProductLink(product), '_blank')}
+                        title="Ver no Mercado Livre"
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Button>
