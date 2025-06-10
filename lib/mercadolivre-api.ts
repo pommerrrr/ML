@@ -44,14 +44,31 @@ export class MercadoLivreAPI {
       if (categoryId) params.append('category', categoryId);
       if (sortBy) params.append('sort', sortBy);
 
+      console.log(`Buscando no ML: ${MERCADOLIVRE_API_BASE}/sites/${siteId}/search?${params.toString()}`);
+      
       const response = await axios.get(
-        `${MERCADOLIVRE_API_BASE}/sites/${siteId}/search?${params.toString()}`
+        `${MERCADOLIVRE_API_BASE}/sites/${siteId}/search?${params.toString()}`,
+        {
+          timeout: 10000, // 10 segundos de timeout
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        }
       );
 
-      return response.data;
-    } catch (error) {
-      console.error('Erro ao buscar produtos:', error);
-      throw new Error('Falha ao buscar produtos do Mercado Livre');
+      console.log(`Resposta da API ML:`, response.status, response.data?.results?.length || 0);
+      return response.data || { results: [] };
+    } catch (error: any) {
+      console.error('Erro detalhado ao buscar produtos:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        query,
+        siteId
+      });
+      
+      // Se der erro, retorna array vazio ao invés de lançar exceção
+      return { results: [] };
     }
   }
 
