@@ -1,0 +1,85 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-*: initial;
+  --color-background: oklch(100% 0 0);
+  --color-foreground: oklch(20% 0 0);
+  --color-card: oklch(100% 0 0);
+  --color-card-foreground: oklch(20% 0 0);
+  --color-popover: oklch(100% 0 0);
+  --color-popover-foreground: oklch(20% 0 0);
+  --color-primary: oklch(47.4% 0.224 259.9);
+  --color-primary-foreground: oklch(100% 0 0);
+  --color-secondary: oklch(97.3% 0.0106 286.38);
+  --color-secondary-foreground: oklch(45.9% 0.00529 286.38);
+  --color-muted: oklch(97.3% 0.0106 286.38);
+  --color-muted-foreground: oklch(45.1% 0.00607 286.38);
+  --color-accent: oklch(97.3% 0.0106 286.38);
+  --color-accent-foreground: oklch(45.9% 0.00529 286.38);
+  --color-destructive: oklch(62.8% 0.257 29.2);
+  --color-destructive-foreground: oklch(100% 0 0);
+  --color-border: oklch(91.9% 0.0106 286.38);
+  --color-input: oklch(91.9% 0.0106 286.38);
+  --color-ring: oklch(47.4% 0.224 259.9);
+  --radius: 0.5rem;
+  --font-sans: var(--font-inter-sans);
+  --font-serif: var(--font-playfair-display);
+}
+
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-background: oklch(9% 0 0);
+    --color-foreground: oklch(95% 0 0);
+    --color-card: oklch(9% 0 0);
+    --color-card-foreground: oklch(95% 0 0);
+    --color-popover: oklch(9% 0 0);
+    --color-popover-foreground: oklch(95% 0 0);
+    --color-primary: oklch(75.7% 0.196 263.9);
+    --color-primary-foreground: oklch(9% 0 0);
+    --color-secondary: oklch(15% 0.0189 285.86);
+    --color-secondary-foreground: oklch(65% 0.0189 285.86);
+    --color-muted: oklch(15% 0.0189 285.86);
+    --color-muted-foreground: oklch(65% 0.0189 285.86);
+    --color-accent: oklch(15% 0.0189 285.86);
+    --color-accent-foreground: oklch(65% 0.0189 285.86);
+    --color-destructive: oklch(69.5% 0.205 27.3);
+    --color-destructive-foreground: oklch(9% 0 0);
+    --color-border: oklch(15% 0.0189 285.86);
+    --color-input: oklch(15% 0.0189 285.86);
+    --color-ring: oklch(75.7% 0.196 263.9);
+  }
+}
+
+@layer base {
+  * {
+    border-color: oklch(var(--color-border));
+  }
+  body {
+    color: oklch(var(--color-foreground));
+    background: oklch(var(--color-background));
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+  
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+}

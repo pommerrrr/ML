@@ -1,173 +1,161 @@
-# 📊 Mercado Livre Analyzer
+# Sistema de Análise Mercado Livre
 
-Sistema web completo para análise de produtos do Mercado Livre, cálculo de margens de lucro e sugestão de preços de custo ideais.
+Sistema web para análise de produtos mais vendidos no Mercado Livre, com cálculo automático de custos e margem de lucro ideal.
 
-## 🎯 **Funcionalidades**
+## 🚀 Funcionalidades
 
-- **🔍 Busca Inteligente**: Busque produtos por termo ou encontre os mais vendidos
-- **📈 Análise de Margens**: Cálculo automático de custos (taxas ML, frete, anúncios)
-- **💰 Sugestão de Custo**: Preço máximo que você deve pagar para ter >30% de lucro
-- **📊 Dashboard**: Gráficos e métricas dos produtos analisados
-- **💾 Histórico**: Salva todas as análises no Firebase
+- **Análise de Produtos**: Busca automática dos produtos mais vendidos e catalogados no Mercado Livre
+- **Cálculo de Custos**: Análise detalhada dos custos (comissão ML, taxa fixa, frete)
+- **Margem de Lucro**: Calcula o valor ideal de custo para margem ≥ 30%
+- **Salvamento no Firebase**: Armazena análises para consulta posterior
+- **Dashboard Intuitivo**: Interface moderna com gráficos e estatísticas
+- **Filtros por Categoria**: Análise segmentada por categorias do ML
 
-## 🚀 **Acesso Rápido**
+## 🛠️ Tecnologias
 
-🌐 **Site Online:** https://pommerrrr.github.io/ML/
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **UI**: Tailwind V4, ShadCN UI, Recharts
+- **Backend**: API Routes do Next.js
+- **Banco de Dados**: Firebase Firestore
+- **Integrações**: API do Mercado Livre
+- **Deploy**: Vercel (configurado)
 
-## ⚙️ **Configuração Inicial**
+## 📦 Instalação
 
-### 1. **Configure o Firebase:**
-
-1. Acesse [console.firebase.google.com](https://console.firebase.google.com)
-2. Crie um novo projeto
-3. Ative o **Firestore Database** (modo teste)
-4. Adicione um app Web e copie as configurações
-
-### 2. **Configure as Secrets no GitHub:**
-
-No seu repositório `https://github.com/pommerrrr/ML`:
-
-1. Vá em **Settings** → **Secrets and variables** → **Actions**
-2. Adicione essas 6 secrets com os valores do Firebase:
-
-```
-VITE_FIREBASE_API_KEY
-VITE_FIREBASE_AUTH_DOMAIN
-VITE_FIREBASE_PROJECT_ID
-VITE_FIREBASE_STORAGE_BUCKET
-VITE_FIREBASE_MESSAGING_SENDER_ID
-VITE_FIREBASE_APP_ID
-```
-
-### 3. **Configure as Regras do Firestore:**
-
-No Firebase Console → Firestore Database → Regras:
-
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /product-analyses/{document} {
-      allow read, write: if true;
-    }
-  }
-}
-```
-
-### 4. **Ative o GitHub Pages:**
-
-1. Settings → Pages
-2. Source: **GitHub Actions**
-
-## 🔄 **Como Usar**
-
-### **1. Buscar Produtos**
-- Digite um termo de busca OU
-- Clique em "Buscar Mais Vendidos" (com filtro de categoria opcional)
-
-### **2. Analisar Produtos**
-- **Individual**: Clique em "Analisar" em qualquer produto
-- **Em lote**: Clique em "Analisar Todos"
-
-### **3. Interpretar Resultados**
-- **Preço de Venda**: Valor atual no ML
-- **Custos Totais**: Taxas ML (12%) + Frete (R$15) + Anúncios (5%)
-- **Receita Líquida**: Quanto você realmente recebe
-- **Custo Máximo**: Preço que deve pagar para ter 30% de lucro
-
-### **4. Dashboard**
-- Visualize estatísticas gerais
-- Gráficos de distribuição de margem
-- Recomendações baseadas nos dados
-
-## 🛠️ **Desenvolvimento Local**
-
+1. Clone o repositório:
 ```bash
-# Clone o repositório
-git clone https://github.com/pommerrrr/ML.git
-cd ML
-
-# Instale dependências
-npm install
-
-# Configure variáveis locais
-cp .env.example .env
-# Edite .env com suas credenciais Firebase
-
-# Execute
-npm run dev
+git clone <seu-repositorio>
+cd ml-analise
 ```
 
-## 📦 **Build e Deploy**
-
+2. Instale as dependências:
 ```bash
-# Build para produção
-npm run build
-
-# Preview local
-npm run preview
+bun install
 ```
 
-O deploy automático acontece via GitHub Actions ao fazer push na branch main.
-
-## 🔧 **Personalização**
-
-### **Modificar Taxas de Custos**
-
-Edite `src/services/mercadoLivre.ts`:
-
-```typescript
-const mlFeePercentage = 0.12; // 12% taxa ML
-const shippingCost = 15; // R$ 15 frete médio
-const premiumAdCost = sellingPrice * 0.05; // 5% anúncios
-const targetProfitMargin = 0.30; // 30% lucro target
+3. Configure as variáveis de ambiente criando um arquivo `.env.local`:
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyCcRs1o1MRJQHNjV-m5cyG1aB17zURnHAI
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=ml-analise.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=ml-analise
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=ml-analise.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=1067736402366
+NEXT_PUBLIC_FIREBASE_APP_ID=1:1067736402366:web:03303b5dbd934c4b18d1ef
+MERCADO_LIVRE_API_BASE=https://api.mercadolibre.com
 ```
 
-## 🌐 **API do Mercado Livre**
+4. Execute o projeto:
+```bash
+bun dev
+```
 
-### **Endpoints Utilizados (Públicos - sem autenticação):**
-- `/sites/MLB/search` - Buscar produtos
-- `/sites/MLB/categories` - Listar categorias
+## 🔧 Deploy no Vercel
 
-### **Fallback Automático:**
-- Se a API falhar (CORS/limite), o sistema usa dados mock para demonstração
-- Todas as funcionalidades continuam operando normalmente
+1. Conecte o repositório GitHub ao Vercel
+2. Configure as variáveis de ambiente no painel do Vercel
+3. Deploy automático será realizado a cada push
 
-## 🔍 **Solução de Problemas**
+## 🏗️ Estrutura do Projeto
 
-### **Página em Branco:**
-1. Verifique se as secrets do Firebase estão configuradas
-2. Abra F12 → Console para ver erros específicos
+```
+├── app/
+│   ├── api/ml/          # API routes para Mercado Livre
+│   ├── globals.css      # Estilos globais
+│   ├── layout.tsx       # Layout principal
+│   ├── page.tsx         # Página inicial
+│   └── providers.tsx    # Providers (React Query, Toast)
+├── components/
+│   ├── ui/              # Componentes ShadCN UI
+│   ├── dashboard.tsx    # Dashboard principal
+│   ├── product-card.tsx # Card de produto
+│   ├── analysis-stats.tsx # Estatísticas
+│   └── saved-analyses.tsx # Análises salvas
+├── hooks/
+│   ├── use-products.ts  # Hook para produtos ML
+│   └── use-firebase.ts  # Hook para Firebase
+├── lib/
+│   ├── firebase.ts      # Configuração Firebase
+│   ├── mercado-livre.ts # Utilitários ML
+│   └── utils.ts         # Utilitários gerais
+└── .env.local           # Variáveis de ambiente
+```
 
-### **Erro 404 nos Assets:**
-- Verifique se `base: '/ML/'` está correto no `vite.config.js`
+## 📊 Como Funciona
 
-### **API do ML não funciona:**
-- Normal! O sistema tem fallback automático com dados mock
-- Para produção, implemente um backend próprio
+### 1. Busca de Produtos
+- Utiliza a API do Mercado Livre (`/highlights` e `/search`)
+- Filtra apenas produtos catalogados
+- Ordena por quantidade vendida
 
-## 📊 **Métricas e KPIs**
+### 2. Cálculo de Custos
+- **Comissão**: 12% (Clássico) ou 17% (Premium)
+- **Taxa Fixa**: Até R$ 6,75 baseado no preço
+- **Frete**: Estimativa baseada no valor do produto
 
-O sistema calcula automaticamente:
-- **Taxa de conversão**: % de produtos com margem >30%
-- **Margem média**: Média de todas as análises
-- **ROI projetado**: Retorno sobre investimento esperado
-- **Distribuição por categoria**: Quais nichos são mais lucrativos
+### 3. Margem de Lucro
+- Calcula receita líquida (preço - custos)
+- Sugere custo máximo para 30%+ de lucro
+- Classifica produtos como lucrativos ou não
 
-## 🤝 **Contribuição**
+## 🔥 Recursos Principais
+
+### Dashboard
+- Estatísticas em tempo real
+- Gráficos de distribuição por margem
+- Top 3 produtos mais lucrativos
+- Filtros por categoria
+
+### Análise de Produtos
+- Card detalhado para cada produto
+- Link direto para o produto no ML
+- Botão para salvar análise
+- Cálculos detalhados de custo
+
+### Firebase Integration
+- Salvamento automático de análises
+- Histórico de produtos analisados
+- Notas personalizadas
+- Sincronização em tempo real
+
+## 🎯 Regras de Negócio
+
+### Custos do Mercado Livre
+- **Anúncio Clássico**: 10-14% de comissão
+- **Anúncio Premium**: 15-19% de comissão
+- **Taxa Fixa**: Varia de acordo com o preço
+- **Frete Grátis**: Custo assumido pelo vendedor
+
+### Margem de Lucro
+- **Meta**: ≥ 30% de margem líquida
+- **Aceitável**: 15-30% de margem
+- **Baixa**: < 15% de margem
+
+## 🔒 Segurança
+
+- Variáveis de ambiente para chaves sensíveis
+- Regras do Firebase configuradas
+- CORS configurado para domínio específico
+- Rate limiting nas APIs
+
+## 📱 Responsividade
+
+- Design mobile-first
+- Interface adaptativa
+- Gráficos responsivos
+- Navegação otimizada para touch
+
+## 🤝 Contribuição
 
 1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
 5. Abra um Pull Request
 
-## 📞 **Suporte**
+## 📄 Licença
 
-- **Issues**: [GitHub Issues](https://github.com/pommerrrr/ML/issues)
-- **Documentação**: Este README
-- **Firebase**: [Documentação Firebase](https://firebase.google.com/docs)
+Este projeto está sob a licença MIT.
 
 ---
 
-✨ **Desenvolvido para otimizar suas vendas no Mercado Livre!**
+**Desenvolvido para análise de oportunidades no Mercado Livre** 🛒
