@@ -81,7 +81,7 @@ export default function AnalysisPage() {
         console.log('Resposta da API:', data);
         
         if (data.results && Array.isArray(data.results) && data.results.length > 0) {
-          const isDemoData = data.source === 'demo_products';
+          const isDemoData = data.isDemo || data.source === 'demo_products';
           setIsUsingDemoProducts(isDemoData);
           
           setDebugInfo(`${data.results.length} produtos carregados (${isDemoData ? 'demonstração' : 'API real'})`);
@@ -222,25 +222,76 @@ export default function AnalysisPage() {
   };
 
   const getProductImage = (product: MercadoLivreProduct) => {
-    // Tenta várias fontes de imagem
+    // Tenta múltiplas fontes de imagem
     if (product.thumbnail) {
-      // Converte para imagem de maior resolução se possível
-      return product.thumbnail.replace('-I.webp', '-F.webp').replace('-S.webp', '-F.webp');
+      // Converte para imagem de maior resolução
+      let imageUrl = product.thumbnail
+        .replace('-I.webp', '-F.webp')
+        .replace('-S.webp', '-F.webp')
+        .replace('-I.jpg', '-F.jpg')
+        .replace('-S.jpg', '-F.jpg');
+      
+      // Garante que seja https
+      if (imageUrl.startsWith('http:')) {
+        imageUrl = imageUrl.replace('http:', 'https:');
+      }
+      
+      return imageUrl;
     }
     
-    // Fallback para placeholder personalizado
-    const shortTitle = product.title.slice(0, 15).replace(/[^a-zA-Z0-9 ]/g, '');
-    return `https://via.placeholder.com/400x300/e5e7eb/6b7280?text=${encodeURIComponent(shortTitle)}`;
+    // Fallback para placeholder personalizado baseado na categoria
+    const categoryColors = {
+      'MLB1055': '4f46e5/white', // Celulares - azul
+      'MLB1648': '059669/white', // Informática - verde
+      'MLB1051': 'dc2626/white', // Eletrônicos - vermelho
+      'MLB1276': 'ea580c/white', // Esportes - laranja
+      'MLB1430': 'c2410c/white', // Roupas - marrom
+      'MLB1574': '7c3aed/white', // Casa - roxo
+      'MLB1132': 'db2777/white', // Beleza - rosa
+      'MLB1144': '0891b2/white', // Games - ciano
+    };
+    
+    const color = categoryColors[product.category_id as keyof typeof categoryColors] || 'e5e7eb/6b7280';
+    const shortTitle = product.title.slice(0, 20).replace(/[^a-zA-Z0-9 ]/g, '').trim();
+    
+    return `https://via.placeholder.com/400x300/${color}?text=${encodeURIComponent(shortTitle)}`;
   };
 
   const getProductLink = (product: MercadoLivreProduct) => {
-    // Gera link funcional para o produto
-    if (product.permalink) {
+    // Se for produto de demonstração (ID fictício), redireciona para busca
+    if (isUsingDemoProducts || product.id.startsWith('MLB') && product.id.length > 15) {
+      // Para produtos de demonstração, faz busca pelo título
+      const searchQuery = encodeURIComponent(
+        product.title.split(' ').slice(0, 3).join(' ')
+      );
+      return `https://lista.mercadolivre.com.br/${searchQuery}`;
+    }
+    
+    // Para produtos reais da API, usa permalink original ou gera baseado no ID
+    if (product.permalink && product.permalink.includes('mercadolivre.com.br')) {
       return product.permalink;
     }
     
     // Fallback para URL padrão do ML
     return `https://produto.mercadolivre.com.br/${product.id}`;
+  };
+
+  const handleExternalLink = (product: MercadoLivreProduct) => {
+    if (isUsingDemoProducts) {
+      // Mostra aviso para produtos de demonstração
+      const confirmOpen = window.confirm(
+        `🚨 ATENÇÃO: Este é um produto de demonstração!\n\n` +
+        `O sistema irá redirecionar para uma busca por "${product.title.split(' ').slice(0, 3).join(' ')}" no Mercado Livre.\n\n` +
+        `Deseja continuar?`
+      );
+      
+      if (confirmOpen) {
+        window.open(getProductLink(product), '_blank');
+      }
+    } else {
+      // Para produtos reais, abre diretamente
+      window.open(getProductLink(product), '_blank');
+    }
   };
 
   const priceRanges = [
@@ -323,6 +374,22 @@ export default function AnalysisPage() {
           </Button>
         </div>
       </div>
+
+      {/* Aviso de demonstração */}
+      {isUsingDemoProducts && (
+        <Alert className="border-orange-200 bg-orange-50">
+          <AlertCircle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
+            <strong>⚠️ MODO DEMONSTRAÇÃO ATIVO</strong><br />
+            Os produtos mostrados são para demonstração das funcionalidades do sistema. 
+            Os links externos farão busca por produtos similares no Mercado Livre, não levando ao produto exato mostrado.
+            <br />
+            <span className="text-sm text-orange-600 mt-1 block">
+              💡 A API do Mercado Livre pode estar temporariamente indisponível. Os dados e análises funcionam normalmente.
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Filtros */}
       <Card>
@@ -497,8 +564,8 @@ export default function AnalysisPage() {
                       )}
 
                       {isUsingDemoProducts && (
-                        <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700">
-                          Demo
+                        <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-300">
+                          🚨 Demonstração
                         </Badge>
                       )}
                     </div>
@@ -521,10 +588,12 @@ export default function AnalysisPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(getProductLink(product), '_blank')}
-                        title="Ver no Mercado Livre"
+                        onClick={() => handleExternalLink(product)}
+                        title={isUsingDemoProducts ? "Buscar produto similar no ML (demonstração)" : "Ver no Mercado Livre"}
+                        className={isUsingDemoProducts ? "border-orange-300 text-orange-600 hover:bg-orange-50" : ""}
                       >
                         <ExternalLink className="h-4 w-4" />
+                        {isUsingDemoProducts && <span className="ml-1 text-xs">Demo</span>}
                       </Button>
                     </div>
                   </div>
